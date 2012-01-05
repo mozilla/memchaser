@@ -2,3 +2,5 @@ content     memchaser                 chrome/content/
 locale      memchaser   en-US         chrome/locale/en-US/
 resource    memchaser                 resource/
 skin        memchaser   classic/1.0   chrome/skin/
+
+overlay     chrome://browser/content/browser.xul    chrome://memchaser/content/memchaser.xul

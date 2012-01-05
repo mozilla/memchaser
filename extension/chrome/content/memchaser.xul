@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE overlay >
+<overlay id="memchaser-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script src="chrome://memchaser/content/memchaser.js" type="application/x-javascript"/>
+
+<statusbar id="status-bar">
+  <statusbarpanel id="memchaser"
+                  label="Initilize..." />
+</statusbar>
+</overlay>
