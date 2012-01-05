@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>memchaser@quality.mozilla.org</em:id>
+    <em:type>2</em:type>
+    <em:name>MemChaser</em:name>
+    <em:version>0.1</em:version>
+    <em:creator>Mozilla QA</em:creator>
+    <em:contributor>Henrik Skupin (http://www.hskupin.info)</em:contributor>
+    <em:homepageURL>https://wiki.mozilla.org/QA/Automation_Services/Projects/Addons/MemChaser</em:homepageURL>
+    <em:description>Garbage Collector and Memory Chaser</em:description>
+    <em:aboutURL>chrome://memchaser/content/about.xul</em:aboutURL>
+
+    <!-- Firefox -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>11.0a1</em:minVersion>
+        <em:maxVersion>12.0a1</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+  </Description>
+</RDF>

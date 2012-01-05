@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<!--
+build.xml adapted from Shawn Wilsher's rtse
+(http://shawnwilsher.com/extensions/rtse/)
+ -->
+
+<project name="memchaser" default="createxpi">
+  <tstamp>
+    <format property="build.number" pattern="yyyyMMdd" offset="-1" unit="hour"/>
+  </tstamp>
+  <property name="build.version" value="0.1.${build.number}"/>
+
+  <target name="createxpi">
+    <delete file="memchaser.xpi"/>
+    <zip destfile="memchaser.xpi">
+      <zipfileset dir="extension" includes="chrome/**" excludes="**GIT"/>
+      <zipfileset dir="extension" includes="resource/**" excludes="**GIT"/>
+      <zipfileset dir="extension" includes="chrome.manifest"/>
+      <zipfileset dir="extension" includes="install.rdf"/>
+    </zip>
+  </target>
+
+  <target name="cleanup">
+    <!-- Delete the chrome directory, any other cleanup actions go here -->
+    <delete dir="jar"/>
+  </target>
+</project>
