@@ -45,7 +45,7 @@ ConsoleListener.prototype = {
   observe: function(aMessage) {
     var msg = aMessage.message;
 
-    var re = /^(CC|GC)\(.*/i;
+    var re = /^(CC|GC).*/i;
     if (msg.match(re)) {
       var panel = document.getElementById("memchaser-statusbar-panel");
       panel.setAttribute('label', msg);
