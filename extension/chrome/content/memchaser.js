@@ -34,8 +34,26 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+
 Components.utils.import('resource://gre/modules/Services.jsm');
 
+
+/**
+ * Until we have an available API to retrieve GC related information we have to
+ * parse the console messages in the Error Console
+ *
+ * Firefox <11
+ * GC mode: full, timestamp: 1325854678521066, duration: 32 ms.
+ * CC timestamp: 1325854683540071, collected: 75 (75 waiting for GC),
+ *               suspected: 378, duration: 19 ms.
+ *
+ * Firefox >=11
+ * GC(T+0.0) Type:Glob, Total:27.9, Wait:0.6, Mark:13.4, Sweep:12.6, FinObj:3.7,
+ *           FinStr:0.2, FinScr:0.5, FinShp:2.1, DisCod:0.3, DisAnl:3.0,
+ *           XPCnct:0.8, Destry:0.0, End:2.1, +Chu:16, -Chu:0, Reason:DestC
+ * CC(T+9.6) collected: 1821 (1821 waiting for GC), suspected: 18572,
+ *           duration: 31 ms.
+ **/
 
 function ConsoleListener() {
   this.register();
@@ -45,11 +63,16 @@ ConsoleListener.prototype = {
   observe: function(aMessage) {
     var msg = aMessage.message;
 
-    var re = /^(CC|GC).*/i;
-    if (msg.match(re)) {
-      var panel = document.getElementById("memchaser-statusbar-panel");
-      panel.setAttribute('label', msg);
-    }
+    // Only process messages from the garbage collector
+    if (! msg.match(/^(CC|GC).*/i))
+      return;
+
+    // Parse GC/CC duration from the message
+    /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
+    var duration = (RegExp.$4) ? RegExp.$4 : RegExp.$3;
+
+    var panel = document.getElementById("memchaser-statusbar-panel");
+    panel.setAttribute('label', RegExp.$1 + ": " + duration + "ms");
   },
 
   QueryInterface: function (iid) {
