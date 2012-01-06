@@ -15,6 +15,7 @@ build.xml adapted from Shawn Wilsher's rtse
     <delete file="memchaser.xpi"/>
     <zip destfile="memchaser.xpi">
       <zipfileset dir="extension" includes="chrome/**" excludes="**GIT"/>
+      <zipfileset dir="extension" includes="defaults/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="resource/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="chrome.manifest"/>
       <zipfileset dir="extension" includes="install.rdf"/>
