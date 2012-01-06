@@ -7,7 +7,7 @@
     <em:id>memchaser@quality.mozilla.org</em:id>
     <em:type>2</em:type>
     <em:name>MemChaser</em:name>
-    <em:version>0.1</em:version>
+    <em:version>0.1pre</em:version>
     <em:creator>Mozilla QA</em:creator>
     <em:contributor>Henrik Skupin (http://www.hskupin.info)</em:contributor>
     <em:homepageURL>https://wiki.mozilla.org/QA/Automation_Services/Projects/Addons/MemChaser</em:homepageURL>
