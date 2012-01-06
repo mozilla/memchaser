@@ -46,9 +46,13 @@
 
   <script type="application/x-javascript" src="chrome://memchaser/content/memchaser.js" />
 
-  <statusbar id="status-bar">
-    <statusbarpanel id="memchaser-statusbar-panel"
-                    label="Initilize..." />
-  </statusbar>
+  <toolbarpalette id="BrowserToolbarPalette">
+    <toolbaritem id="memchaser-toolbar-item"
+                 class="toolbaritem-1"
+                 label="MemChaser">
+      <label id="memchaser-toolbar-duration"
+             value="Initilize..." />
+    </toolbaritem>
+  </toolbarpalette>
 
 </overlay>

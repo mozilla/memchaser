@@ -71,8 +71,8 @@ ConsoleListener.prototype = {
     /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
     var duration = (RegExp.$4) ? RegExp.$4 : RegExp.$3;
 
-    var panel = document.getElementById("memchaser-statusbar-panel");
-    panel.setAttribute('label', RegExp.$1 + ": " + duration + "ms");
+    var label = document.getElementById("memchaser-toolbar-duration");
+    label.value = RegExp.$1 + ": " + duration + "ms";
   },
 
   QueryInterface: function (iid) {
@@ -98,6 +98,21 @@ var gMemChaser = {
 
   init : function gMemChaser_init() {
     window.removeEventListener("load", arguments.callee, false);
+
+    // On firstrun auto-add the toolbar item to the add-on bar
+    let firstRun = Services.prefs.getBoolPref("extensions.memchaser.firstrun");
+    if (firstRun) {
+      let addonBar = document.getElementById("addon-bar");
+      let currentSet = addonBar.currentSet;
+
+      if (currentSet.indexOf("memchaser-toolbar-item") === -1) {
+        addonBar.currentSet += ",memchaser-toolbar-item";
+        addonBar.setAttribute("currentset", addonBar.currentSet);
+        document.persist("addon-bar", "currentset");
+        addonBar.collapsed = false;
+        Services.prefs.setBoolPref("extensions.memchaser.firstrun", false);
+      }
+    }
   }
 }
 
