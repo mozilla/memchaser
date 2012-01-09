@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Henrik Skupin <mail@hskupin.info> (Original Author)
+ *   Dave Hunt <dhunt@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -55,7 +56,16 @@ Components.utils.import('resource://gre/modules/Services.jsm');
  **/
 
 // For now simply store the latest GC and CC duration values
-var gGCData = {'GC': 'n/a', 'CC': 'n/a' };
+var gData = {'GC': 'n/a', 'CC': 'n/a' };
+
+var memMgr = Cc["@mozilla.org/memory-reporter-manager;1"].
+             getService(Ci.nsIMemoryReporterManager);
+
+var timer = Cc["@mozilla.org/timer;1"].
+            createInstance(Ci.nsITimer);
+
+var TYPE_REPEATING_PRECISE = Ci.nsITimer.TYPE_REPEATING_PRECISE;
+var BYTE_TO_MEGABYTE = 1/1048576;
 
 function ConsoleListener() {
   this.register();
@@ -71,10 +81,9 @@ ConsoleListener.prototype = {
 
     // Parse GC/CC duration from the message
     /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
-    gGCData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
+    gData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
 
-    var label = document.getElementById("memchaser-toolbar-duration");
-    label.value = "GC=" + gGCData['GC'] + ', CC=' + gGCData['CC'];
+    updateLabel();
   },
 
   QueryInterface: function (iid) {
@@ -95,6 +104,15 @@ ConsoleListener.prototype = {
   }
 }
 
+function pollMetrics() {
+    gData['explicit'] = memMgr.explicit;
+    updateLabel();
+}
+
+function updateLabel() {
+  var label = document.getElementById("memchaser-toolbar-duration");
+  label.value = "Memory=" + Math.round(gData['explicit'] * BYTE_TO_MEGABYTE) + "MB, GC=" + gData['GC'] + ', CC=' + gData['CC'];
+}
 
 var gMemChaser = {
 
@@ -123,3 +141,5 @@ var gMemChaser = {
 var consoleListener = new ConsoleListener();
 
 window.addEventListener("load", gMemChaser.init, false);
+
+timer.init(pollMetrics, 5*1000, TYPE_REPEATING_PRECISE);
