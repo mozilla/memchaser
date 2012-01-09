@@ -24,8 +24,4 @@ build.xml adapted from Shawn Wilsher's rtse
     </zip>
   </target>
 
-  <target name="cleanup">
-    <!-- Delete the chrome directory, any other cleanup actions go here -->
-    <delete dir="jar"/>
-  </target>
 </project>
