@@ -6,14 +6,16 @@ build.xml adapted from Shawn Wilsher's rtse
  -->
 
 <project name="memchaser" default="createxpi">
+  <property file="build.properties"/>
+  <fail unless="build.version" message="Build version must be specified."/>
   <tstamp>
-    <format property="build.number" pattern="yyyyMMdd" offset="-1" unit="hour"/>
+    <format property="build.number" pattern="yyyyMMddhhmm"/>
   </tstamp>
-  <property name="build.version" value="0.1.${build.number}"/>
+  <property name="filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
 
   <target name="createxpi">
-    <delete file="memchaser.xpi"/>
-    <zip destfile="memchaser.xpi">
+    <delete file="${filename}"/>
+    <zip destfile="${filename}">
       <zipfileset dir="extension" includes="chrome/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="defaults/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="resource/**" excludes="**GIT"/>
