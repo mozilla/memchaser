@@ -51,7 +51,7 @@
                  class="toolbaritem-1"
                  label="MemChaser">
       <label id="memchaser-toolbar-duration"
-             value="Initilize..." />
+             value="Initialize MemChaser..." />
     </toolbaritem>
   </toolbarpalette>
 

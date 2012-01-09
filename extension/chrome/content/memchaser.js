@@ -37,7 +37,6 @@
 
 Components.utils.import('resource://gre/modules/Services.jsm');
 
-
 /**
  * Until we have an available API to retrieve GC related information we have to
  * parse the console messages in the Error Console
@@ -55,6 +54,9 @@ Components.utils.import('resource://gre/modules/Services.jsm');
  *           duration: 31 ms.
  **/
 
+// For now simply store the latest GC and CC duration values
+var gGCData = {'GC': 'n/a', 'CC': 'n/a' };
+
 function ConsoleListener() {
   this.register();
 }
@@ -69,10 +71,10 @@ ConsoleListener.prototype = {
 
     // Parse GC/CC duration from the message
     /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
-    var duration = (RegExp.$4) ? RegExp.$4 : RegExp.$3;
+    gGCData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
 
     var label = document.getElementById("memchaser-toolbar-duration");
-    label.value = RegExp.$1 + ": " + duration + "ms";
+    label.value = "GC=" + gGCData['GC'] + ', CC=' + gGCData['CC'];
   },
 
   QueryInterface: function (iid) {
