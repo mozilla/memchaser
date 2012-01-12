@@ -35,6 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
+Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import('resource://gre/modules/Services.jsm');
 
 /**
@@ -73,8 +74,8 @@ ConsoleListener.prototype = {
     /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
     gGCData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
 
-    var label = document.getElementById("memchaser-toolbar-duration");
-    label.value = "GC=" + gGCData['GC'] + ', CC=' + gGCData['CC'];
+    updateLabel();
+    appendLog();
   },
 
   QueryInterface: function (iid) {
@@ -95,6 +96,25 @@ ConsoleListener.prototype = {
   }
 }
 
+function updateLabel() {
+  var label = document.getElementById("memchaser-toolbar-duration");
+  label.value = "GC=" + gGCData['GC'] + ', CC=' + gGCData['CC'];
+}
+
+function appendLog() {
+  var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
+                 createInstance(Ci.nsIFileOutputStream);
+
+  foStream.init(logFile, 0x02 | 0x08 | 0x10, 0666, 0);
+  var data = new Date().getTime() + ", '" + gGCData['GC'] + "', '" + gGCData['CC'] + "'\n";
+
+  var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
+                  createInstance(Ci.nsIConverterOutputStream);
+
+  converter.init(foStream, "UTF-8", 0, 0);
+  converter.writeString(data);
+  converter.close();
+}
 
 var gMemChaser = {
 
@@ -118,6 +138,14 @@ var gMemChaser = {
   }
 }
 
+
+var logFile;
+try {
+  logFile = Services.prefs.getComplexValue("extensions.memchaser.logfile", Ci.nsILocalFile);
+} catch(e) {
+  logFile = FileUtils.getFile("Home", ["memchaser.log"]);
+  Services.prefs.setComplexValue("extensions.memchaser.logfile", Ci.nsILocalFile, logFile);
+}
 
 // start listening
 var consoleListener = new ConsoleListener();
