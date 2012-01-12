@@ -9,7 +9,7 @@ build.xml adapted from Shawn Wilsher's rtse
   <xmlproperty file="extension/install.rdf" collapseAttributes="true"/>
   <property name="build.version" value="${RDF.Description.em:version}"/>
   <tstamp>
-    <format property="build.number" pattern="yyyyMMddhhmm"/>
+    <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
   <property name="filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
 
