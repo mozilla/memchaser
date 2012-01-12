@@ -66,7 +66,6 @@ var timer = Cc["@mozilla.org/timer;1"].
 
 var TYPE_REPEATING_PRECISE = Ci.nsITimer.TYPE_REPEATING_PRECISE;
 var BYTE_TO_MEGABYTE = 1/1048576;
-var POLL_INTERVAL = 5*1000;
 
 function ConsoleListener() {
   this.register();
@@ -143,4 +142,5 @@ var consoleListener = new ConsoleListener();
 
 window.addEventListener("load", gMemChaser.init, false);
 
-timer.init(pollMetrics, POLL_INTERVAL, TYPE_REPEATING_PRECISE);
+let pollInterval = Services.prefs.getIntPref("extensions.memchaser.pollinterval");
+timer.init(pollMetrics, pollInterval*1000, TYPE_REPEATING_PRECISE);
