@@ -56,7 +56,7 @@ Components.utils.import('resource://gre/modules/Services.jsm');
  **/
 
 // For now simply store the latest GC and CC duration values
-var gData = {'GC': 'n/a', 'CC': 'n/a' };
+var gData = {'explicit': 'n/a', 'GC': 'n/a', 'CC': 'n/a' };
 
 var memMgr = Cc["@mozilla.org/memory-reporter-manager;1"].
              getService(Ci.nsIMemoryReporterManager);
@@ -66,6 +66,7 @@ var timer = Cc["@mozilla.org/timer;1"].
 
 var TYPE_REPEATING_PRECISE = Ci.nsITimer.TYPE_REPEATING_PRECISE;
 var BYTE_TO_MEGABYTE = 1/1048576;
+var POLL_INTERVAL = 5*1000;
 
 function ConsoleListener() {
   this.register();
@@ -105,13 +106,13 @@ ConsoleListener.prototype = {
 }
 
 function pollMetrics() {
-    gData['explicit'] = memMgr.explicit;
+    gData['explicit'] = Math.round(memMgr.explicit * BYTE_TO_MEGABYTE) + 'MB';
     updateLabel();
 }
 
 function updateLabel() {
   var label = document.getElementById("memchaser-toolbar-duration");
-  label.value = "Memory=" + Math.round(gData['explicit'] * BYTE_TO_MEGABYTE) + "MB, GC=" + gData['GC'] + ', CC=' + gData['CC'];
+  label.value = "Memory=" + gData['explicit'] + ", GC=" + gData['GC'] + ', CC=' + gData['CC'];
 }
 
 var gMemChaser = {
@@ -142,4 +143,4 @@ var consoleListener = new ConsoleListener();
 
 window.addEventListener("load", gMemChaser.init, false);
 
-timer.init(pollMetrics, 5*1000, TYPE_REPEATING_PRECISE);
+timer.init(pollMetrics, POLL_INTERVAL, TYPE_REPEATING_PRECISE);
