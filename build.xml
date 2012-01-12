@@ -6,8 +6,8 @@ build.xml adapted from Shawn Wilsher's rtse
  -->
 
 <project name="memchaser" default="createxpi">
-  <property file="build.properties"/>
-  <fail unless="build.version" message="Build version must be specified."/>
+  <xmlproperty file="extension/install.rdf" collapseAttributes="true"/>
+  <property name="build.version" value="${RDF.Description.em:version}"/>
   <tstamp>
     <format property="build.number" pattern="yyyyMMddhhmm"/>
   </tstamp>
