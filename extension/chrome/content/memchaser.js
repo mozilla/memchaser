@@ -133,6 +133,9 @@ var gMemChaser = {
         Services.prefs.setBoolPref("extensions.memchaser.firstrun", false);
       }
     }
+
+    let interval = Services.prefs.getIntPref("extensions.memchaser.interval");
+    timer.init(pollMetrics, interval, TYPE_REPEATING_PRECISE);
   }
 }
 
@@ -141,6 +144,3 @@ var gMemChaser = {
 var consoleListener = new ConsoleListener();
 
 window.addEventListener("load", gMemChaser.init, false);
-
-let pollInterval = Services.prefs.getIntPref("extensions.memchaser.pollinterval");
-timer.init(pollMetrics, pollInterval*1000, TYPE_REPEATING_PRECISE);
