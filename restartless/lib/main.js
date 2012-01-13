@@ -13,7 +13,7 @@ exports.main = function(options, callbacks) {
     width: 100
   });
 
-  var reporter = require("memory-reporter").reporter;
+  var reporter = new require("memory-reporter").Reporter();
   reporter.on('data', function (data) {
     widget.content = Math.round(data) + 'MB';
   });

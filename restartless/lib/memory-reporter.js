@@ -20,6 +20,18 @@ var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
              .getService(Ci.nsIMemoryReporterManager);
 
 
+function Reporter() {
+  unload.ensure(this);
+}
+Reporter.prototype = new EventEmitter();
+Reporter.prototype.constructor = Reporter;
+
+Reporter.prototype.unload() = function Reporter_unload() {
+  console.log("unload");
+  this._removeAllListeners();
+}
+
+
 const reporter = EventEmitter.compose({
   constructor: function Reporter() {
     // Report unhandled errors from listeners
@@ -49,4 +61,4 @@ const reporter = EventEmitter.compose({
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
 
-exports.reporter = reporter;
+exports.Reporter = Reporter;
