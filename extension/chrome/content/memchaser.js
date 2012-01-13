@@ -104,7 +104,7 @@ ConsoleListener.prototype = {
   }
 }
 
-function pollMetrics() {
+function pollMemory() {
     gData['explicit'] = Math.round(memMgr.explicit * BYTE_TO_MEGABYTE) + 'MB';
     updateLabel();
 }
@@ -134,8 +134,8 @@ var gMemChaser = {
       }
     }
 
-    let interval = Services.prefs.getIntPref("extensions.memchaser.interval");
-    timer.init(pollMetrics, interval, TYPE_REPEATING_PRECISE);
+    let memoryInterval = Services.prefs.getIntPref("extensions.memchaser.memory.interval");
+    timer.init(pollMemory, memoryInterval, TYPE_REPEATING_PRECISE);
   }
 }
 
