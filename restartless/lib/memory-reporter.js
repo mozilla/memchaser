@@ -11,8 +11,6 @@ const prefs = require("api-utils/preferences-service");
 const timer = require("timer");
 const unload = require("unload");
 
-const BYTE_TO_MEGABYTE = 1/1048576;
-
 const POLL_INTERVAL_PREF = "extensions.memchaser.memory.interval";
 const POLL_INTERVAL_DEFAULT = 5000;
 
@@ -26,20 +24,26 @@ const reporter = EventEmitter.compose({
     // Report unhandled errors from listeners
     this.on("error", console.exception.bind(console));
 
-    this.unload = this.unload.bind(this);
-    unload.ensure(this);
+    // Make sure we clean-up correctly
+    unload.ensure(this, 'unload');
 
-    this._interval = prefs.get(POLL_INTERVAL_PREF, POLL_INTERVAL_DEFAULT);
-    this._timer = timer.setInterval(this._onTimer, this._interval, this);
+    // TODO: Reading the pref should be moved out of this module
+    this.interval = prefs.get(POLL_INTERVAL_PREF, POLL_INTERVAL_DEFAULT);
+    this._timer = timer.setInterval(this.onTimer, this.interval, this);
   },
 
-  unload: function _destructor() {
+  unload: function Reporter_unload() {
     this._removeAllListeners();
-    timers.clearInterval(this._timer);
+    timer.clearInterval(this._timer);
   },
 
-  _onTimer: function(scope) {
-    scope._emit('data', memSrv.explicit * BYTE_TO_MEGABYTE);
+  onTimer: function Reporter_onTimer(scope) {
+    var data = {
+      explicit: memSrv.explicit,
+      resident: memSrv.resident
+    }
+
+    scope._emit('data', data);
   }
 })();
 

@@ -4,6 +4,12 @@
     "author": "Henrik Skupin <mail@hskupin.info>",
     "version": "0.1",
     "fullName": "MemChaser",
-    "id": "jid1-jbduMxOFrJjKZQ",
-    "description": "Chasing garbage collection and memory usage"
+    "id": "memchaser",
+    "description": "Chasing garbage collection and memory usage",
+    "preferences": [{
+        "name": "memory.interval",
+        "title": "Poll interval for memory reporter data",
+        "type": "integer",
+        "value": 2000
+    }]
 }
