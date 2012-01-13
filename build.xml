@@ -11,6 +11,10 @@ build.xml adapted from Shawn Wilsher's rtse
   <tstamp>
     <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
+
+  <condition property="filename" value="${ant.project.name}-${build.version}.xpi">
+    <isset property="release"/>
+  </condition>
   <property name="filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
 
   <target name="createxpi">
