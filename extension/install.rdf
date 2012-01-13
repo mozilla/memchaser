@@ -13,6 +13,7 @@
     <em:homepageURL>https://wiki.mozilla.org/QA/Automation_Services/Projects/Addons/MemChaser</em:homepageURL>
     <em:description>Garbage Collector and Memory Chaser</em:description>
     <em:aboutURL>chrome://memchaser/content/about.xul</em:aboutURL>
+    <em:bootstrap>true</em:bootstrap>
 
     <!-- Firefox -->
     <em:targetApplication>
