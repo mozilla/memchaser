@@ -75,7 +75,9 @@ ConsoleListener.prototype = {
     gGCData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
 
     updateLabel();
-    appendLog();
+    if (gMemChaser && gMemChaser.logToFile) {
+      appendLog();
+    }
   },
 
   QueryInterface: function (iid) {
@@ -105,8 +107,8 @@ function appendLog() {
   var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
                  createInstance(Ci.nsIFileOutputStream);
 
-  foStream.init(logFile, 0x02 | 0x08 | 0x10, 0666, 0);
-  var data = new Date().getTime() + ", '" + gGCData['GC'] + "', '" + gGCData['CC'] + "'\n";
+  foStream.init(gMemChaser.logFile(), 0x02 | 0x08 | 0x10, 0666, 0);
+  var data = "\"" + new Date().getTime() + "\", \"" + gGCData['GC'] + "\", \"" + gGCData['CC'] + "\"\n";
 
   var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
                   createInstance(Ci.nsIConverterOutputStream);
@@ -135,16 +137,65 @@ var gMemChaser = {
         Services.prefs.setBoolPref("extensions.memchaser.firstrun", false);
       }
     }
+    
+    this._logToFile = false;
+  },
+
+  createLogFile : function gMemChaser_createLogFile() {
+    var file = Cc["@mozilla.org/file/directory_service;1"].
+               getService(Ci.nsIProperties).
+               get("ProfD", Ci.nsIFile);
+    file.append("memchaser");
+    if (!file.exists() || !file.isDirectory() ) {
+      file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);
+    }
+    file.append("memchaser-" + new Date().getTime() + ".log");
+
+    var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
+                   createInstance(Ci.nsIFileOutputStream);
+
+    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
+
+    var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
+                    createInstance(Ci.nsIConverterOutputStream);
+
+    converter.init(foStream, "UTF-8", 0, 0);
+    converter.writeString("timestamp, GC, CC\n");
+    converter.close();
+    this._log = file;
+  },
+
+  toggleLogging : function gMemChaser_toggleLogging() {
+    var label = document.getElementById("memchaser-toolbar-logging");
+    if (!this._logToFile) {
+      gMemChaser.createLogFile();
+      this._logToFile = true;
+      label.value = "Log: Enabled";
+    } else {
+      this._logToFile = false;
+      label.value = "Log: Disabled";
+    }
+  },
+
+  /**
+   * Get the log file
+   *
+   * @returns {nsIFile} Log file
+   */
+  logFile : function gMemChaser_logFile() {
+    return this._log;
+  },
+
+  /**
+   * Check if we should be writing to the log file
+   *
+   * @returns True if log to file is enabled
+   * @type {boolean}
+   */
+  get logToFile() {
+    return this._logToFile;
   }
-}
 
-
-var logFile;
-try {
-  logFile = Services.prefs.getComplexValue("extensions.memchaser.logfile", Ci.nsILocalFile);
-} catch(e) {
-  logFile = FileUtils.getFile("Home", ["memchaser.log"]);
-  Services.prefs.setComplexValue("extensions.memchaser.logfile", Ci.nsILocalFile, logFile);
 }
 
 // start listening
