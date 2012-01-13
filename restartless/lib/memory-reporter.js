@@ -7,7 +7,8 @@
 var {Cc, Ci} = require("chrome");
 
 const { EventEmitter } = require("events");
-const timers = require("timers");
+const prefs = require("api-utils/preferences-service");
+const timer = require("timer");
 const unload = require("unload");
 
 const BYTE_TO_MEGABYTE = 1/1048576;
@@ -20,18 +21,6 @@ var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
              .getService(Ci.nsIMemoryReporterManager);
 
 
-function Reporter() {
-  unload.ensure(this);
-}
-Reporter.prototype = new EventEmitter();
-Reporter.prototype.constructor = Reporter;
-
-Reporter.prototype.unload() = function Reporter_unload() {
-  console.log("unload");
-  this._removeAllListeners();
-}
-
-
 const reporter = EventEmitter.compose({
   constructor: function Reporter() {
     // Report unhandled errors from listeners
@@ -40,8 +29,8 @@ const reporter = EventEmitter.compose({
     this.unload = this.unload.bind(this);
     unload.ensure(this);
 
-    this._interval = POLL_INTERVAL_DEFAULT;
-    this._timer = timers.setInterval(this._onTimer, this._interval);
+    this._interval = prefs.get(POLL_INTERVAL_PREF, POLL_INTERVAL_DEFAULT);
+    this._timer = timer.setInterval(this._onTimer, this._interval, this);
   },
 
   unload: function _destructor() {
@@ -49,16 +38,10 @@ const reporter = EventEmitter.compose({
     timers.clearInterval(this._timer);
   },
 
-  _onTimer: function() {
-    this._emit('data', memSrv.explicit * BYTE_TO_MEGABYTE);
-  },
-
-  get interval() {
-    return this._interval;
+  _onTimer: function(scope) {
+    scope._emit('data', memSrv.explicit * BYTE_TO_MEGABYTE);
   }
 })();
 
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
-
-exports.Reporter = Reporter;
