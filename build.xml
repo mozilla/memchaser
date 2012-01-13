@@ -6,14 +6,20 @@ build.xml adapted from Shawn Wilsher's rtse
  -->
 
 <project name="memchaser" default="createxpi">
+  <xmlproperty file="extension/install.rdf" collapseAttributes="true"/>
+  <property name="build.version" value="${RDF.Description.em:version}"/>
   <tstamp>
-    <format property="build.number" pattern="yyyyMMdd" offset="-1" unit="hour"/>
+    <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
-  <property name="build.version" value="0.1.${build.number}"/>
+
+  <condition property="filename" value="${ant.project.name}-${build.version}.xpi">
+    <isset property="release"/>
+  </condition>
+  <property name="filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
 
   <target name="createxpi">
-    <delete file="memchaser.xpi"/>
-    <zip destfile="memchaser.xpi">
+    <delete file="${filename}"/>
+    <zip destfile="${filename}">
       <zipfileset dir="extension" includes="chrome/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="defaults/**" excludes="**GIT"/>
       <zipfileset dir="extension" includes="resource/**" excludes="**GIT"/>
@@ -22,8 +28,4 @@ build.xml adapted from Shawn Wilsher's rtse
     </zip>
   </target>
 
-  <target name="cleanup">
-    <!-- Delete the chrome directory, any other cleanup actions go here -->
-    <delete dir="jar"/>
-  </target>
 </project>
