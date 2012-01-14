@@ -6,10 +6,10 @@
 
 var {Cc, Ci} = require("chrome");
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
-const timer = require("timer");
-const unload = require("unload");
+const timer = require("api-utils/timer");
+const unload = require("api-utils/unload");
 
 const POLL_INTERVAL_PREF = "extensions.memchaser.memory.interval";
 const POLL_INTERVAL_DEFAULT = 5000;
