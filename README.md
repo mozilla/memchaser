@@ -11,8 +11,8 @@ it's environment.
 
 To test the extension run:
 
-  cd extension
-  cfx run
+    cd extension
+    cfx run
 
 To build simply run `ant` and the default build script/target will be invoked:
 
@@ -28,5 +28,5 @@ To build for release (no build version in filename):
 
 You can also build directly using `cfx`:
 
-  cd extension
-  cfx xpi
+    cd extension
+    cfx xpi
