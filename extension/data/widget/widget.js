@@ -30,7 +30,7 @@ self.port.on("update_memory", function(data) {
   hide_init();
 
   // Update widget with current memory usage
-  ["explicit", "resident"].forEach(function (aType) {
+  ["resident"].forEach(function (aType) {
     var element = document.getElementById(aType);
     element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE);
   });
