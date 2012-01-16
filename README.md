@@ -7,7 +7,12 @@ How to build
 ------------
 
 Before you can test or build the extension you will have to clone the [Add-ons SDK](https://github.com/mozilla/addon-sdk). After it has been done, activate
-it's environment.
+it's environment:
+
+    git clone https://github.com/mozilla/addon-sdk
+    cd addon-sdk
+    source bin/activate
+    cd ..
 
 To test the extension run:
 
