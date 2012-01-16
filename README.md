@@ -12,7 +12,7 @@ it's environment.
 To test the extension run:
 
   cd extension
-  cfx test
+  cfx run
 
 To build simply run:
 
