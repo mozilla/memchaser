@@ -14,7 +14,19 @@ To test the extension run:
   cd extension
   cfx run
 
-To build simply run:
+To build simply run `ant` and the default build script/target will be invoked:
+
+    ant
+
+You can override the build number used in the filename:
+
+    ant -Dbuild.number=1
+
+To build for release (no build version in filename):
+
+    ant -Drelease=true
+
+You can also build directly using `cfx`:
 
   cd extension
   cfx xpi
