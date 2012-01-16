@@ -39,7 +39,7 @@ const reporter = EventEmitter.compose({
 
   onTimer: function Reporter_onTimer(scope) {
     var data = {
-      explicit: memSrv.explicit,
+      //explicit: memSrv.explicit,
       resident: memSrv.resident
     }
 
