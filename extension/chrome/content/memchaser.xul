@@ -52,6 +52,9 @@
                  label="MemChaser">
       <label id="memchaser-toolbar-duration"
              value="Initialize MemChaser..." />
+      <label id="memchaser-toolbar-logging"
+             value="Log: Disabled"
+             onclick="gMemChaser.toggleLogging()" />
     </toolbaritem>
   </toolbarpalette>
 

@@ -36,6 +36,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
+Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import('resource://gre/modules/Services.jsm');
 
 /**
@@ -84,6 +85,9 @@ ConsoleListener.prototype = {
     gData[RegExp.$1] = ((RegExp.$4) ? RegExp.$4 : RegExp.$3) + 'ms';
 
     updateLabel();
+    if (gMemChaser && gMemChaser.logToFile) {
+      appendLog();
+    }
   },
 
   QueryInterface: function (iid) {
@@ -104,15 +108,34 @@ ConsoleListener.prototype = {
   }
 }
 
-function pollMetrics() {
-    gData['explicit'] = Math.round(memMgr.explicit * BYTE_TO_MEGABYTE) + 'MB';
-    updateLabel();
-}
-
 function updateLabel() {
   var label = document.getElementById("memchaser-toolbar-duration");
   label.value = "Memory=" + gData['explicit'] + ", GC=" + gData['GC'] + ', CC=' + gData['CC'];
 }
+
+function appendLog() {
+  var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
+                 createInstance(Ci.nsIFileOutputStream);
+
+  foStream.init(gMemChaser.logFile(), 0x02 | 0x08 | 0x10, 0666, 0);
+  var data = "\"" + new Date().getTime() + "\", \"" + gData['explicit'] + "\", \"" + gData['GC'] + "\", \"" + gData['CC'] + "\"\n";
+
+  var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
+                  createInstance(Ci.nsIConverterOutputStream);
+
+  converter.init(foStream, "UTF-8", 0, 0);
+  converter.writeString(data);
+  converter.close();
+}
+
+function pollMetrics() {
+    gData['explicit'] = Math.round(memMgr.explicit * BYTE_TO_MEGABYTE) + 'MB';
+    updateLabel();
+    if (gMemChaser && gMemChaser.logToFile) {
+      appendLog();
+    }
+}
+
 
 var gMemChaser = {
 
@@ -134,11 +157,68 @@ var gMemChaser = {
       }
     }
 
+    this._logToFile = false;
+
     let interval = Services.prefs.getIntPref("extensions.memchaser.interval");
     timer.init(pollMetrics, interval, TYPE_REPEATING_PRECISE);
-  }
-}
+  },
 
+  createLogFile : function gMemChaser_createLogFile() {
+    var file = Cc["@mozilla.org/file/directory_service;1"].
+               getService(Ci.nsIProperties).
+               get("ProfD", Ci.nsIFile);
+    file.append("memchaser");
+    if (!file.exists() || !file.isDirectory() ) {
+      file.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);
+    }
+    file.append("memchaser-" + new Date().getTime() + ".log");
+
+    var foStream = Cc["@mozilla.org/network/file-output-stream;1"].  
+                   createInstance(Ci.nsIFileOutputStream);
+
+    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
+
+    var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
+                    createInstance(Ci.nsIConverterOutputStream);
+
+    converter.init(foStream, "UTF-8", 0, 0);
+    converter.writeString("timestamp, memory, GC, CC\n");
+    converter.close();
+    this._log = file;
+  },
+
+  toggleLogging : function gMemChaser_toggleLogging() {
+    var label = document.getElementById("memchaser-toolbar-logging");
+    if (!this._logToFile) {
+      gMemChaser.createLogFile();
+      this._logToFile = true;
+      label.value = "Log: Enabled";
+    } else {
+      this._logToFile = false;
+      label.value = "Log: Disabled";
+    }
+  },
+
+  /**
+   * Get the log file
+   *
+   * @returns {nsIFile} Log file
+   */
+  logFile : function gMemChaser_logFile() {
+    return this._log;
+  },
+
+  /**
+   * Check if we should be writing to the log file
+   *
+   * @returns True if log to file is enabled
+   * @type {boolean}
+   */
+  get logToFile() {
+    return this._logToFile;
+  }
+
+}
 
 // start listening
 var consoleListener = new ConsoleListener();
