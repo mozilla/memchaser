@@ -13,7 +13,6 @@ const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const unload = require("api-utils/unload");
 
-
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
 
 
@@ -53,6 +52,22 @@ const reporter = EventEmitter.compose({
 
   get isEnabled() this._isEnabled,
 
+  /**
+   * Until we have an available API to retrieve GC related information we have to
+   * parse the console messages in the Error Console
+   *
+   * Firefox <11
+   * GC mode: full, timestamp: 1325854678521066, duration: 32 ms.
+   * CC timestamp: 1325854683540071, collected: 75 (75 waiting for GC),
+   *               suspected: 378, duration: 19 ms.
+   *
+   * Firefox >=11
+   * GC(T+0.0) Type:Glob, Total:27.9, Wait:0.6, Mark:13.4, Sweep:12.6, FinObj:3.7,
+   *           FinStr:0.2, FinScr:0.5, FinShp:2.1, DisCod:0.3, DisAnl:3.0,
+   *           XPCnct:0.8, Destry:0.0, End:2.1, +Chu:16, -Chu:0, Reason:DestC
+   * CC(T+9.6) collected: 1821 (1821 waiting for GC), suspected: 18572,
+   *           duration: 31 ms.
+   **/
   observe: function(aMessage) {
     var msg = aMessage.message;
 

@@ -6,14 +6,15 @@ MemChaser
 How to build
 ------------
 
-To build simply run `ant` and the default build script/target will be invoked:
+Before you can test or build the extension you will have to clone the [Add-ons SDK](https://github.com/mozilla/addon-sdk). After it has been done, activate
+it's environment.
 
-    ant
+To test the extension run:
 
-You can override the build number used in the filename:
+  cd extension
+  cfx test
 
-    ant -Dbuild.number=1
+To build simply run:
 
-To build for release (no build version in filename):
-
-    ant -Drelease=true
+  cd extension
+  cfx xpi
