@@ -8,7 +8,7 @@
     "description": "Chasing garbage collection and memory usage",
     "preferences": [{
         "name": "memory.interval",
-        "title": "Poll interval for memory information",
+        "title": "Poll interval for memory information (ms)",
         "type": "integer",
         "value": 2000
     }]
