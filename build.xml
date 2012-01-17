@@ -1,31 +1,35 @@
 <?xml version="1.0"?>
 
-<!--
-build.xml adapted from Shawn Wilsher's rtse
-(http://shawnwilsher.com/extensions/rtse/)
- -->
-
-<project name="memchaser" default="createxpi">
-  <xmlproperty file="extension/install.rdf" collapseAttributes="true"/>
-  <property name="build.version" value="${RDF.Description.em:version}"/>
+<project name="memchaser" default="package">
   <tstamp>
     <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
 
-  <condition property="filename" value="${ant.project.name}-${build.version}.xpi">
-    <isset property="release"/>
-  </condition>
-  <property name="filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
+  <target name="build">
+    <property name="build.filename" value="extension/${ant.project.name}.xpi"/>
+    <delete file="${build.filename}"/>
+    <exec executable="cfx" dir="extension">
+      <arg value="xpi"/>
+    </exec>
+    <echo>build.filename: ${build.filename}</echo>
+  </target>
 
-  <target name="createxpi">
-    <delete file="${filename}"/>
-    <zip destfile="${filename}">
-      <zipfileset dir="extension" includes="chrome/**" excludes="**GIT"/>
-      <zipfileset dir="extension" includes="defaults/**" excludes="**GIT"/>
-      <zipfileset dir="extension" includes="resource/**" excludes="**GIT"/>
-      <zipfileset dir="extension" includes="chrome.manifest"/>
-      <zipfileset dir="extension" includes="install.rdf"/>
-    </zip>
+  <target name="getversion" unless="build.version">
+    <unzip src="${build.filename}" dest="temp"/>
+    <xmlproperty file="temp/install.rdf" collapseAttributes="true"/>
+    <property name="build.version" value="${RDF.Description.em:version}"/>
+    <delete dir="temp"/>
+    <echo>build.version: ${build.version}</echo>
+  </target>
+
+  <target name="package" depends="build, getversion">
+    <condition property="package.filename" value="${ant.project.name}-${build.version}.xpi">
+      <isset property="release"/>
+    </condition>
+    <property name="package.filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
+    <delete file="${package.filename}"/>
+    <move file="${build.filename}" tofile="${package.filename}"/>
+    <echo>package.filename: ${package.filename}</echo>
   </target>
 
 </project>
