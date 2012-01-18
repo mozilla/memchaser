@@ -17,11 +17,16 @@ self.port.on("update_garbage_collector", function(data) {
     if (!data[aType])
       return;
 
-    var element = document.getElementById(aType);
-    element.textContent = data[aType];
+    var duration = document.getElementById(aType + "_duration");
+    duration.textContent = data[aType].duration + "ms";
 
-    element.className = (data[aType] >= GARBAGE_COLLECTOR_DURATION_WARNING) ?
+    duration.className = (data[aType].duration >= GARBAGE_COLLECTOR_DURATION_WARNING) ?
                           "warning" : "";
+
+    if (data[aType].age) {
+      var age = document.getElementById(aType + "_age");
+      age.textContent = " (" + data[aType].age + "s)";
+    }
   });
 
 });
@@ -32,6 +37,6 @@ self.port.on("update_memory", function(data) {
   // Update widget with current memory usage
   ["resident"].forEach(function (aType) {
     var element = document.getElementById(aType);
-    element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE);
+    element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE) + "MB";
   });
 });
