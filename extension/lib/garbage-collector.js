@@ -69,6 +69,7 @@ const reporter = EventEmitter.compose({
    *           duration: 31 ms.
    **/
   observe: function(aMessage) {
+    console.error('garbage_collector.observe');
     var msg = aMessage.message;
 
     // Only process messages from the garbage collector
@@ -79,7 +80,10 @@ const reporter = EventEmitter.compose({
     /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
 
     var data = { };
-    data[RegExp.$1.toLowerCase()] = (RegExp.$4) ? RegExp.$4 : RegExp.$3;
+    data[RegExp.$1.toLowerCase()] = {
+      timestamp: new Date(),
+      duration: (RegExp.$4) ? RegExp.$4 : RegExp.$3
+    }
 
     this._emit('data', data);
   }
