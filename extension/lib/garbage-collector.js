@@ -69,7 +69,6 @@ const reporter = EventEmitter.compose({
    *           duration: 31 ms.
    **/
   observe: function(aMessage) {
-    console.error('garbage_collector.observe');
     var msg = aMessage.message;
 
     // Only process messages from the garbage collector

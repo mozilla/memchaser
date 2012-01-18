@@ -45,9 +45,11 @@ exports.main = function(options, callbacks) {
       }
       gData.current.garbage_collector[entry] = data[entry];
 
-      if ("timestamp" in gData.previous.garbage_collector[entry] && "timestamp" in gData.current.garbage_collector[entry]) {
-        var age = gData.current.garbage_collector[entry].timestamp.getTime() - gData.previous.garbage_collector[entry].timestamp.getTime();
-        data[entry].age = age / 1000;
+      if (entry in gData.previous.garbage_collector) {
+        var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
+        var previousTime = gData.previous.garbage_collector[entry].timestamp.getTime();
+        var age = currentTime - previousTime;
+        data[entry].age = (age * 0.001).toFixed(3);
       }
     }
 
