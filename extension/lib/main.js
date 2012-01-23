@@ -7,6 +7,7 @@
 var {Cc, Ci} = require("chrome");
 
 const events = require("events");
+const logger = require("logger");
 const widgets = require("widget");
 
 const data = require("self").data;
@@ -37,6 +38,26 @@ exports.main = function(options, callbacks) {
     width: 400
   });
 
+  var loggerWidget = widgets.Widget({
+    id: "memchaser-logger-widget",
+    label: "MemChaser logging",
+    tooltip: "MemChaser logging is disabled. Click to enable.",
+    contentURL: [data.url("widget/loggerWidget.html")],
+    contentScriptFile: [data.url("widget/loggerWidget.js")],
+    contentScriptWhen: "ready",
+    width: 16,
+    onClick: function() {
+      if (logger.isLogging()) {
+        logger.stop();
+        this.tooltip = "MemChaser logging is disabled. Click to enable.";
+      } else {
+        logger.start();
+        this.tooltip = "MemChaser logging is enabled. Click to disable.";
+      }
+      this.port.emit("logging_changed", logger.isLogging());
+    }
+  });
+
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
     for (var entry in data) {
@@ -54,11 +75,13 @@ exports.main = function(options, callbacks) {
     }
 
     widget.port.emit("update_garbage_collector", data);
+    logger.log(gData.current);
   });
 
   // If new data for memory usage is available update global data
   memory_reporter.on("data", function (data) {
     gData.current.memory = data;
     widget.port.emit("update_memory", data);
+    logger.log(gData.current);
   });
 };
