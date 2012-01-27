@@ -6,9 +6,8 @@
 
 var {Cc, Ci} = require("chrome");
 
-var data = require("self").data;
-
 var events = require("events");
+var self = require("self");
 var widgets = require("widget");
 
 var garbage_collector = require("garbage-collector");
@@ -29,13 +28,18 @@ var gData = {
 
 
 exports.main = function (options, callbacks) {
-  var logger = new Logger();
+
+  // Create logger instance
+  var dir = Cc["@mozilla.org/file/directory_service;1"]
+            .getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+  dir.append(self.name);
+  var logger = new Logger(dir);
 
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
-    contentURL: [data.url("widget/widget.html")],
-    contentScriptFile: [data.url("widget/widget.js")],
+    contentURL: [self.data.url("widget/widget.html")],
+    contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
     width: 400
   });
@@ -44,8 +48,8 @@ exports.main = function (options, callbacks) {
     id: "memchaser-logger-widget",
     label: "MemChaser logging",
     tooltip: "MemChaser logging is disabled. Click to enable.",
-    contentURL: [data.url("widget/loggerWidget.html")],
-    contentScriptFile: [data.url("widget/loggerWidget.js")],
+    contentURL: [self.data.url("widget/loggerWidget.html")],
+    contentScriptFile: [self.data.url("widget/loggerWidget.js")],
     contentScriptWhen: "ready",
     width: 16,
     onClick: function() {
