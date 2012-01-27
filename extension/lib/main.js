@@ -6,14 +6,15 @@
 
 var {Cc, Ci} = require("chrome");
 
-const events = require("events");
-const logger = require("logger");
-const widgets = require("widget");
+var data = require("self").data;
 
-const data = require("self").data;
+var events = require("events");
+var widgets = require("widget");
 
-const garbage_collector = require("garbage-collector");
-const memory_reporter = require("memory-reporter");
+var garbage_collector = require("garbage-collector");
+var { Logger } = require("logger");
+var memory_reporter = require("memory-reporter");
+
 
 var gData = {
   current: {
@@ -27,7 +28,8 @@ var gData = {
 };
 
 
-exports.main = function(options, callbacks) {
+exports.main = function (options, callbacks) {
+  var logger = new Logger();
 
   var widget = widgets.Widget({
     id: "memchaser-widget",
@@ -47,14 +49,14 @@ exports.main = function(options, callbacks) {
     contentScriptWhen: "ready",
     width: 16,
     onClick: function() {
-      if (logger.isLogging()) {
+      if (logger.active) {
         logger.stop();
         this.tooltip = "MemChaser logging is disabled. Click to enable.";
       } else {
         logger.start();
         this.tooltip = "MemChaser logging is enabled. Click to disable.";
       }
-      this.port.emit("logging_changed", logger.isLogging());
+      this.port.emit("logging_changed", logger.active);
     }
   });
 
