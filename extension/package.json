@@ -4,7 +4,7 @@
     "author": "Henrik Skupin <mail@hskupin.info>",
     "version": "0.1pre",
     "fullName": "MemChaser",
-    "id": "memchaser",
+    "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",
     "preferences": [{
         "name": "memory.interval",
