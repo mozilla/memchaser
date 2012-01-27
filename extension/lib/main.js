@@ -4,7 +4,7 @@
 
 "use strict";
 
-var {Cc, Ci} = require("chrome");
+var { Cc, Ci } = require("chrome");
 
 var events = require("events");
 var self = require("self");

@@ -1,18 +1,21 @@
-var {Cc, Ci} = require("chrome");
+var { Cc, Ci } = require("chrome");
 
 
 function Logger(aDir) {
   this._dir = aDir;
-  this._logFile = null;
 
   this.active = false;
+  this.file = null;
 }
 
 Logger.prototype = {
 
-  prepareLogFile: function Logger_prepareLogFile() {
-    if (!this._dir.isDirectory())
+
+  prepareFile: function Logger_prepareFile() {
+    if (!this._dir.exists())
       this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);
+    else if (!this._dir.isDirectory())
+      throw Error(this._dir.path + " is not a directory.");
 
     var file = this._dir.clone();
     file.append(new Date().getTime() + ".log");
@@ -20,21 +23,21 @@ Logger.prototype = {
     var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
                    .createInstance(Ci.nsIFileOutputStream);
     foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
-    this._logFile = file;
+    this.file = file;
   },
 
   start: function Logger_start() {
     if (!this.active) {
-      this.prepareLogFile();
+      this.prepareFile();
       this.active = true;
-      console.debug("Logging to '" + this._logFile.path + "' started.");
+      console.debug("Logging to '" + this.file.path + "' started.");
     }
   },
 
   stop: function Logger_stop() {
     if (this.active) {
       this.active = false;
-      console.debug("Logging to '" + this._logFile.path + "' stopped.");
+      console.debug("Logging to '" + this.file.path + "' stopped.");
     }
   },
 
@@ -43,7 +46,7 @@ Logger.prototype = {
       var foStream = Cc["@mozilla.org/network/file-output-stream;1"].
                      createInstance(Ci.nsIFileOutputStream);
 
-      foStream.init(this._logFile, 0x02 | 0x08 | 0x10, 0666, 0);
+      foStream.init(this.file, 0x02 | 0x08 | 0x10, 0666, 0);
 
       data.timestamp = new Date().getTime();
       var message = JSON.stringify(data);
