@@ -4,16 +4,16 @@
 
 "use strict";
 
-var {Cc, Ci} = require("chrome");
+var { Cc, Ci } = require("chrome");
 
-const events = require("events");
-const logger = require("logger");
-const widgets = require("widget");
+var events = require("events");
+var self = require("self");
+var widgets = require("widget");
 
-const data = require("self").data;
+var garbage_collector = require("garbage-collector");
+var { Logger } = require("logger");
+var memory_reporter = require("memory-reporter");
 
-const garbage_collector = require("garbage-collector");
-const memory_reporter = require("memory-reporter");
 
 var gData = {
   current: {
@@ -27,13 +27,19 @@ var gData = {
 };
 
 
-exports.main = function(options, callbacks) {
+exports.main = function (options, callbacks) {
+
+  // Create logger instance
+  var dir = Cc["@mozilla.org/file/directory_service;1"]
+            .getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+  dir.append(self.name);
+  var logger = new Logger(dir);
 
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
-    contentURL: [data.url("widget/widget.html")],
-    contentScriptFile: [data.url("widget/widget.js")],
+    contentURL: [self.data.url("widget/widget.html")],
+    contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
     width: 400
   });
@@ -42,19 +48,19 @@ exports.main = function(options, callbacks) {
     id: "memchaser-logger-widget",
     label: "MemChaser logging",
     tooltip: "MemChaser logging is disabled. Click to enable.",
-    contentURL: [data.url("widget/loggerWidget.html")],
-    contentScriptFile: [data.url("widget/loggerWidget.js")],
+    contentURL: [self.data.url("widget/loggerWidget.html")],
+    contentScriptFile: [self.data.url("widget/loggerWidget.js")],
     contentScriptWhen: "ready",
     width: 16,
     onClick: function() {
-      if (logger.isLogging()) {
+      if (logger.active) {
         logger.stop();
         this.tooltip = "MemChaser logging is disabled. Click to enable.";
       } else {
         logger.start();
         this.tooltip = "MemChaser logging is enabled. Click to disable.";
       }
-      this.port.emit("logging_changed", logger.isLogging());
+      this.port.emit("logging_changed", logger.active);
     }
   });
 
