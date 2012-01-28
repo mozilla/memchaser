@@ -7,12 +7,16 @@
 var { Cc, Ci } = require("chrome");
 
 var events = require("events");
+var prefs = require("api-utils/preferences-service");
 var self = require("self");
+var simpleStorage = require('simple-storage');
 var widgets = require("widget");
 
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
+
+const MEM_LOGGER_PREF = "javascript.options.mem.log";
 
 
 var gData = {
@@ -28,6 +32,10 @@ var gData = {
 
 
 exports.main = function (options, callbacks) {
+
+  // Create simple storage for preferences before modifications
+  if (!simpleStorage.storage.modifiedPrefs)
+    simpleStorage.storage.modifiedPrefs = [];
 
   // Create logger instance
   var dir = Cc["@mozilla.org/file/directory_service;1"]
@@ -64,6 +72,23 @@ exports.main = function (options, callbacks) {
     }
   });
 
+  // For now the logger preference has to be enabled to be able to
+  // parse the GC / CC information from the console service messages
+  var isMemLoggerEnabled = prefs.get(MEM_LOGGER_PREF);
+  if (!isMemLoggerEnabled) {
+    prefs.set(MEM_LOGGER_PREF, true);
+    simpleStorage.storage.modifiedPrefs.push({"name":MEM_LOGGER_PREF, "value":isMemLoggerEnabled});
+
+    var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].
+                  getService(Ci.nsIPromptService);
+    var msg = "In being able to show Garbage Collector information, Firefox has to be restarted.";
+    
+    if (prompts.confirm(null, "MemChaser - Restart Request", msg)) {
+      var startup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
+      startup.quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
+    }
+  }
+
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
     for (var entry in data) {
@@ -89,5 +114,13 @@ exports.main = function (options, callbacks) {
     gData.current.memory = data;
     widget.port.emit("update_memory", data);
     logger.log(gData.current);
+  });
+};
+
+exports.onUnload = function (reason) {
+
+  // Reset any modified preferences
+  simpleStorage.storage.modifiedPrefs.forEach(function (pref) {
+    prefs.set(pref.name, pref.value);
   });
 };

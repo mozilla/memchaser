@@ -10,10 +10,7 @@ Components.utils.import('resource://gre/modules/Services.jsm');
 const {Cc,Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
-const prefs = require("api-utils/preferences-service");
 const unload = require("api-utils/unload");
-
-const MEM_LOGGER_PREF = "javascript.options.mem.log";
 
 
 const reporter = EventEmitter.compose({
@@ -24,33 +21,14 @@ const reporter = EventEmitter.compose({
     // Make sure we clean-up correctly
     unload.ensure(this, 'unload');
 
-    // For now the logger preference has to be enabled to be able to
-    // parse the GC / CC information from the console service messages
-    this._isEnabled = prefs.get(MEM_LOGGER_PREF);
-    if (!this._isEnabled) {
-      prefs.set(MEM_LOGGER_PREF, true);
-
-      var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                    .getService(Ci.nsIPromptService);
-      var msg = "In being able to show Garbage Collector information, Firefox has to be restarted.";
-
-      if (prompts.confirm(null, "MemChaser - Restart Request", msg)) {
-        var startup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
-        startup.quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
-      }
-    }
-
     Services.console.registerListener(this);
   },
 
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (this._isEnabled)
-      Services.console.unregisterListener(this);
+    Services.console.unregisterListener(this);
   },
-
-  get isEnabled() this._isEnabled,
 
   /**
    * Until we have an available API to retrieve GC related information we have to
@@ -88,6 +66,5 @@ const reporter = EventEmitter.compose({
   }
 })();
 
-exports.isEnabled = reporter.isEnabled;
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
