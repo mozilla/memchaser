@@ -10,7 +10,11 @@ Components.utils.import('resource://gre/modules/Services.jsm');
 const {Cc,Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
+const prefs = require("api-utils/preferences-service");
+const simpleStorage = require('simple-storage');
 const unload = require("api-utils/unload");
+
+const MEM_LOGGER_PREF = "javascript.options.mem.log";
 
 
 const reporter = EventEmitter.compose({
@@ -21,14 +25,29 @@ const reporter = EventEmitter.compose({
     // Make sure we clean-up correctly
     unload.ensure(this, 'unload');
 
+    // For now the logger preference has to be enabled to be able to
+    // parse the GC / CC information from the console service messages
+    this._isEnabled = prefs.get(MEM_LOGGER_PREF);
+
     Services.console.registerListener(this);
   },
 
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    Services.console.unregisterListener(this);
+    if (this._isEnabled)
+      Services.console.unregisterListener(this);
   },
+
+  enable: function() {
+    if (!simpleStorage.storage.modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
+      simpleStorage.storage.modifiedPrefs[MEM_LOGGER_PREF] = this._isEnabled;
+    }
+    prefs.set(MEM_LOGGER_PREF, true);
+    this._isEnabled = true;
+  },
+
+  get isEnabled() this._isEnabled,
 
   /**
    * Until we have an available API to retrieve GC related information we have to
@@ -66,5 +85,7 @@ const reporter = EventEmitter.compose({
   }
 })();
 
+exports.isEnabled = reporter.isEnabled;
+exports.enable = reporter.enable;
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
