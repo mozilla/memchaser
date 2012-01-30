@@ -11,7 +11,7 @@ const prefs = require("api-utils/preferences-service");
 const timer = require("api-utils/timer");
 const unload = require("api-utils/unload");
 
-const POLL_INTERVAL_PREF = "extensions.memchaser.memory.interval";
+const POLL_INTERVAL_PREF = "extensions.memchaser@quality.mozilla.org.memory.interval";
 const POLL_INTERVAL_DEFAULT = 5000;
 
 
