@@ -102,7 +102,7 @@ exports.onUnload = function (reason) {
 
   // Reset any modified preferences
   if (reason === "disable" || reason === "uninstall") {
-    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF));
+    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
     for (var pref in modifiedPrefs) {
       prefs.set(pref, modifiedPrefs[pref]);
     }
