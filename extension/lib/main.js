@@ -75,7 +75,7 @@ exports.main = function (options, callbacks) {
       if (entry in gData.previous.garbage_collector) {
         var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
         var previousTime = gData.previous.garbage_collector[entry].timestamp.getTime();
-        var age = currentTime - previousTime;
+        var age = (currentTime - previousTime) - gData.current.garbage_collector[entry].duration;
         data[entry].age = (age * 0.001).toFixed(1);
       }
     }
