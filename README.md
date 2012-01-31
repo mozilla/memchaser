@@ -11,6 +11,8 @@ it's environment:
 
     git clone https://github.com/mozilla/addon-sdk
     cd addon-sdk
+    git fetch
+    git checkout 1.4.2
     source bin/activate
     cd ..
 
