@@ -11,10 +11,10 @@ const {Cc,Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
-const simpleStorage = require('simple-storage');
 const unload = require("api-utils/unload");
 
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
+const MODIFIED_PREFS_PREF = "extensions.memchaser@quality.mozilla.org.modifiedPrefs";
 
 
 const reporter = EventEmitter.compose({
@@ -40,10 +40,12 @@ const reporter = EventEmitter.compose({
   },
 
   enable: function() {
-    if (!simpleStorage.storage.modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
-      simpleStorage.storage.modifiedPrefs[MEM_LOGGER_PREF] = this._isEnabled;
+    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF));
+    if (!modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
+      modifiedPrefs[MEM_LOGGER_PREF] = this._isEnabled;
     }
     prefs.set(MEM_LOGGER_PREF, true);
+    prefs.set(MODIFIED_PREFS_PREF, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
 

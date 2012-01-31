@@ -9,7 +9,6 @@ var { Cc, Ci } = require("chrome");
 var events = require("events");
 var prefs = require("api-utils/preferences-service");
 var self = require("self");
-var simpleStorage = require('simple-storage');
 var widgets = require("widget");
 
 var garbage_collector = require("garbage-collector");
@@ -28,12 +27,10 @@ var gData = {
   }
 };
 
+const MODIFIED_PREFS_PREF = "extensions.memchaser@quality.mozilla.org.modifiedPrefs";
+
 
 exports.main = function (options, callbacks) {
-
-  // Create simple storage for preferences before modifications
-  if (!simpleStorage.storage.modifiedPrefs)
-    simpleStorage.storage.modifiedPrefs = {};
 
   // Create logger instance
   var dir = Cc["@mozilla.org/file/directory_service;1"]
@@ -105,9 +102,10 @@ exports.onUnload = function (reason) {
 
   // Reset any modified preferences
   if (reason === "disable" || reason === "uninstall") {
-    for (var pref in simpleStorage.storage.modifiedPrefs) {
-      prefs.set(pref, simpleStorage.storage.modifiedPrefs[pref]);
+    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF));
+    for (var pref in modifiedPrefs) {
+      prefs.set(pref, modifiedPrefs[pref]);
     }
-  simpleStorage.storage.modifiedPrefs = null;
+    prefs.set(MODIFIED_PREFS_PREF, "{}");
   }
 };
