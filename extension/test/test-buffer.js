@@ -31,18 +31,71 @@ exports.test_readwrite = function(test) {
   buffer.write({resident:1,GC:4,CC:3});
   buffer.write({resident:1,GC:5,CC:3});
   buffer.write({resident:1,GC:6,CC:3});
+  
   // Should overwrite the first write
   buffer.write({resident:1,GC:7,CC:3});
+  
   // Should overwrite the second write
   buffer.write({resident:1,GC:8,CC:3});
   
-  test.assertEqual(buffer.back().GC, 8, "GC field in last written data should be 8");
+  test.assertEqual(buffer.read(-1).GC, 8, "GC field in last written data should be 8");
+  test.assertEqual(buffer.read(-2).GC, 7, "GC field in retrieved data should be 7");
+  test.assertEqual(buffer.read(-3).GC, 6, "GC field in retrieved data should be 6");
+  test.assertEqual(buffer.read(-4).GC, 5, "GC field in retrieved data should be 5");
   
   test.assertEqual(buffer.read().GC, 4, "GC field in retrieved data should be 4");
   test.assertEqual(buffer.read(1).GC, 5, "GC field in retrieved data should be 5");
   test.assertEqual(buffer.read(2).GC, 6, "GC field in retrieved data should be 6");
   test.assertEqual(buffer.read(3).GC, 7, "GC field in retrieved data should be 7");
   test.assertEqual(buffer.read(4).GC, 8, "GC field in retrieved data should be 8");
+};
+
+exports.test_front_ops = function(test) {
+  var buffer = circular_buffer.CircularBuffer(5);
+
+  buffer.unshift({resident:1,GC:2,CC:3});
+  buffer.unshift({resident:1,GC:3,CC:3});
+  buffer.unshift({resident:1,GC:4,CC:3});
+  buffer.unshift({resident:1,GC:5,CC:3});
+  buffer.unshift({resident:1,GC:6,CC:3});
+
+  // Should overwrite the first unshift
+  buffer.unshift({resident:1,GC:7,CC:3});
+  
+  // Should overwrite the second unshift
+  buffer.unshift({resident:1,GC:8,CC:3});  
+  
+  test.assertEqual(buffer.shift().GC, 8, "GC field in shifted data should be 8");
+  test.assertEqual(buffer.shift().GC, 7, "GC field in shifted data should be 7");
+  test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 6");
+  test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 5");
+  test.assertEqual(buffer.shift().GC, 4, "GC field in shifted data should be 4");
+  test.assertEqual(buffer.shift(), undefined, "GC field in shifted data should be undefined");
+  test.assert(buffer.isEmpty(), "Buffer should be empty");
+};
+
+exports.test_back_ops = function(test) {
+  var buffer = circular_buffer.CircularBuffer(5);
+
+  buffer.unshift({resident:1,GC:2,CC:3});
+  buffer.unshift({resident:1,GC:3,CC:3});
+  buffer.unshift({resident:1,GC:4,CC:3});
+  buffer.unshift({resident:1,GC:5,CC:3});
+  buffer.unshift({resident:1,GC:6,CC:3});
+
+  // Should overwrite the first unshift
+  buffer.unshift({resident:1,GC:7,CC:3});
+  
+  // Should overwrite the second unshift
+  buffer.unshift({resident:1,GC:8,CC:3}); 
+  
+  test.assertEqual(buffer.pop().GC, 4, "GC field in popped data should be 4");
+  test.assertEqual(buffer.pop().GC, 5, "GC field in popped data should be 5");
+  test.assertEqual(buffer.pop().GC, 6, "GC field in popped data should be 6");
+  test.assertEqual(buffer.pop().GC, 7, "GC field in popped data should be 7");
+  test.assertEqual(buffer.pop().GC, 8, "GC field in popped data should be 8");
+  test.assertEqual(buffer.pop(), undefined, "GC field in shifted data should be undefined");
+  test.assert(buffer.isEmpty(), "Buffer should be empty");
 };
 
 exports.test_clear = function(test) {
@@ -54,6 +107,9 @@ exports.test_clear = function(test) {
   buffer.write({resident:1,GC:5,CC:3});
   buffer.write({resident:1,GC:6,CC:3});
   buffer.clear();
+  
   test.assertEqual(buffer.read(), undefined, "An empty read should be undefined");
+  test.assertEqual(buffer.size(), 5, "Buffer's size should be restored");
+  test.assert(buffer.isEmpty(), "Buffer should be empty");
 
 };
