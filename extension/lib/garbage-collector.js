@@ -42,7 +42,7 @@ const reporter = EventEmitter.compose({
   enable: function() {
     var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF));
     if (!modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
-      modifiedPrefs[MEM_LOGGER_PREF] = this._isEnabled;
+      modifiedPrefs[MEM_LOGGER_PREF] = prefs.get(MEM_LOGGER_PREF);
     }
     prefs.set(MEM_LOGGER_PREF, true);
     prefs.set(MODIFIED_PREFS_PREF, JSON.stringify(modifiedPrefs));

@@ -106,6 +106,6 @@ exports.onUnload = function (reason) {
     for (var pref in modifiedPrefs) {
       prefs.set(pref, modifiedPrefs[pref]);
     }
-    prefs.set(MODIFIED_PREFS_PREF, "{}");
+    prefs.reset(MODIFIED_PREFS_PREF);
   }
 };

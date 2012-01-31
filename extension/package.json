@@ -7,11 +7,6 @@
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",
     "preferences": [{
-        "name": "modifiedPrefs",
-        "title": "Original values of any modified preferences",
-        "type": "string",
-        "value": "{}"
-    }, {
         "name": "memory.interval",
         "title": "Poll interval for memory information (ms)",
         "type": "integer",
