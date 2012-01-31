@@ -36,7 +36,9 @@ self.port.on("update_memory", function(data) {
 
   // Update widget with current memory usage
   ["resident"].forEach(function (aType) {
-    var element = document.getElementById(aType);
-    element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE) + "MB";
+    if (data[aType]) {
+      var element = document.getElementById(aType);
+      element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE) + "MB";
+    }
   });
 });
