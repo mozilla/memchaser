@@ -8,10 +8,11 @@ var {Cc, Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
+const self = require("self");
 const timer = require("api-utils/timer");
 const unload = require("api-utils/unload");
 
-const POLL_INTERVAL_PREF = "extensions.memchaser@quality.mozilla.org.memory.interval";
+const POLL_INTERVAL_PREF = "extensions." + self.id + ".memory.interval";
 const POLL_INTERVAL_DEFAULT = 5000;
 
 
