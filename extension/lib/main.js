@@ -7,6 +7,7 @@
 var { Cc, Ci } = require("chrome");
 
 var events = require("events");
+var prefs = require("api-utils/preferences-service");
 var self = require("self");
 var widgets = require("widget");
 
@@ -25,6 +26,8 @@ var gData = {
     garbage_collector: { }
   }
 };
+
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 exports.main = function (options, callbacks) {
@@ -90,4 +93,16 @@ exports.main = function (options, callbacks) {
     widget.port.emit("update_memory", data);
     logger.log(gData.current);
   });
+};
+
+exports.onUnload = function (reason) {
+
+  // Reset any modified preferences
+  if (reason === "disable" || reason === "uninstall") {
+    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
+    for (var pref in modifiedPrefs) {
+      prefs.set(pref, modifiedPrefs[pref]);
+    }
+    prefs.reset(MODIFIED_PREFS_PREF);
+  }
 };
