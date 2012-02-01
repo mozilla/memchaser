@@ -28,6 +28,8 @@ const reporter = EventEmitter.compose({
     // For now the logger preference has to be enabled to be able to
     // parse the GC / CC information from the console service messages
     this._isEnabled = prefs.get(MEM_LOGGER_PREF);
+    if (!this._isEnabled)
+      this._enable();
 
     Services.console.registerListener(this);
   },
@@ -39,7 +41,7 @@ const reporter = EventEmitter.compose({
       Services.console.unregisterListener(this);
   },
 
-  enable: function() {
+  _enable: function() {
     var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
     if (!modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
       modifiedPrefs[MEM_LOGGER_PREF] = prefs.get(MEM_LOGGER_PREF);
@@ -48,8 +50,6 @@ const reporter = EventEmitter.compose({
     prefs.set(MODIFIED_PREFS_PREF, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
-
-  get isEnabled() this._isEnabled,
 
   /**
    * Until we have an available API to retrieve GC related information we have to
@@ -87,7 +87,5 @@ const reporter = EventEmitter.compose({
   }
 })();
 
-exports.isEnabled = reporter.isEnabled;
-exports.enable = reporter.enable;
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;

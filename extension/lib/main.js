@@ -67,9 +67,6 @@ exports.main = function (options, callbacks) {
     }
   });
 
-  if (!garbage_collector.isEnabled)
-    garbage_collector.enable();
-
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
     for (var entry in data) {
