@@ -11,10 +11,11 @@ const {Cc,Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
+const self = require("self");
 const unload = require("api-utils/unload");
 
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
-const MODIFIED_PREFS_PREF = "extensions.memchaser@quality.mozilla.org.modifiedPrefs";
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 const reporter = EventEmitter.compose({

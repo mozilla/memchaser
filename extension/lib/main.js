@@ -27,7 +27,7 @@ var gData = {
   }
 };
 
-const MODIFIED_PREFS_PREF = "extensions.memchaser@quality.mozilla.org.modifiedPrefs";
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 exports.main = function (options, callbacks) {
