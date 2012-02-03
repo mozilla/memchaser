@@ -2,7 +2,7 @@
     "name": "memchaser",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "author": "Henrik Skupin <mail@hskupin.info>",
-    "version": "0.1.1pre",
+    "version": "0.2pre",
     "fullName": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",

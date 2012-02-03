@@ -11,9 +11,11 @@ const {Cc,Ci} = require("chrome");
 
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
+const self = require("self");
 const unload = require("api-utils/unload");
 
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 const reporter = EventEmitter.compose({
@@ -27,18 +29,8 @@ const reporter = EventEmitter.compose({
     // For now the logger preference has to be enabled to be able to
     // parse the GC / CC information from the console service messages
     this._isEnabled = prefs.get(MEM_LOGGER_PREF);
-    if (!this._isEnabled) {
-      prefs.set(MEM_LOGGER_PREF, true);
-
-      var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                    .getService(Ci.nsIPromptService);
-      var msg = "In being able to show Garbage Collector information, Firefox has to be restarted.";
-
-      if (prompts.confirm(null, "MemChaser - Restart Request", msg)) {
-        var startup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
-        startup.quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
-      }
-    }
+    if (!this._isEnabled)
+      this._enable();
 
     Services.console.registerListener(this);
   },
@@ -50,7 +42,15 @@ const reporter = EventEmitter.compose({
       Services.console.unregisterListener(this);
   },
 
-  get isEnabled() this._isEnabled,
+  _enable: function() {
+    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
+    if (!modifiedPrefs.hasOwnProperty(MEM_LOGGER_PREF)) {
+      modifiedPrefs[MEM_LOGGER_PREF] = prefs.get(MEM_LOGGER_PREF);
+    }
+    prefs.set(MEM_LOGGER_PREF, true);
+    prefs.set(MODIFIED_PREFS_PREF, JSON.stringify(modifiedPrefs));
+    this._isEnabled = true;
+  },
 
   /**
    * Until we have an available API to retrieve GC related information we have to
@@ -88,6 +88,5 @@ const reporter = EventEmitter.compose({
   }
 })();
 
-exports.isEnabled = reporter.isEnabled;
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
