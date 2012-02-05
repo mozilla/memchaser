@@ -6,13 +6,12 @@ MemChaser
 How to build
 ------------
 
-Before you can test or build the extension you will have to clone the [Add-ons SDK](https://github.com/mozilla/addon-sdk). After it has been done, activate
+Before you can test or build the extension you will have to init the [Add-ons SDK](https://github.com/mozilla/addon-sdk) submodule. After it has been done, activate
 it's environment:
 
-    git clone https://github.com/mozilla/addon-sdk
+    git submodule init
+    git submodule update
     cd addon-sdk
-    git fetch
-    git checkout 1.4.2
     source bin/activate
     cd ..
 
