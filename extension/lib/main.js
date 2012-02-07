@@ -36,7 +36,7 @@ exports.main = function (options, callbacks) {
   var dir = Cc["@mozilla.org/file/directory_service;1"]
             .getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
   dir.append(self.name);
-  var logger = new Logger(dir);
+  var logger = new Logger({aDir: dir});
 
   var widget = widgets.Widget({
     id: "memchaser-widget",
