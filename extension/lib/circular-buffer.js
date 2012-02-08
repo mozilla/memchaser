@@ -7,23 +7,22 @@
 const { EventEmitter } = require('api-utils/events');
 const unload = require('api-utils/unload');
 const ON_WRITE = 'bufferWrite';
+const ON_REMOVE = 'bufferRemove';
 
 var buffer = EventEmitter.compose({
-  constructor: function CircularBuffer(length) {
-    if (typeof(length) == 'undefined' || length < 1) {
+  constructor: function CircularBuffer(options) {
+    this._length = options.length || 60;
+    if (this._length < 1) {
       throw {
         name:    'Input Error',
-        message: 'Input not declared or out of bounds.'
+        message: 'Invalid length'
       };
-    }
-    else {
-      this._size = length;
     }
     
     this._front = 0;
     this._back = 0;
     this._buffer = [];
-    this._buffer.length = this._size;
+    this._buffer.length = this._length;
     this._dataWritten = false;
     
     // Report unhandled errors from listeners
@@ -33,24 +32,22 @@ var buffer = EventEmitter.compose({
     unload.ensure(this, 'unload');
   },
   
+  get length() this._length,
+  
   // Returns the next index, adjusted for cycles
   _nextIndex: function CircularBuffer_nextIndex(index) {
-    return (index + 1) % this._size;
+    return (index + 1) % this._length;
   },
 
   // Returns the previous index, adjusted for cycles
   _prevIndex: function CircularBuffer_prevIndex(index) {
-    index = (index - 1) %this._size;
+    index = (index - 1) % this._length;
     if (index < 0) {
-      index += this._size;
+      index += this._length;
     }
     return index;
   },
-  
-  size: function CircularBuffer_size() {
-    return this._size;
-  },
-  
+
   unload: function CircularBuffer_unload() {
     this._removeAllListeners(ON_WRITE);
   },
@@ -64,12 +61,12 @@ var buffer = EventEmitter.compose({
     
     // Adjust the index to imitate python-style indexing 
     if (index >= 0) {
-      index = (this._front + index) % this._size;
+      index = (this._front + index) % this._length;
     }
     else {
-      index = (this._back + index) % this._size;
+      index = (this._back + index) % this._length;
       if (index < 0) {
-        index += this._size;
+        index += this._length;
       }
     }
     
@@ -113,6 +110,7 @@ var buffer = EventEmitter.compose({
     this._buffer[this._front] = undefined;
     this._front = this._nextIndex(this._front);
     this._dataWritten = false;
+    this._emit(ON_REMOVE);
     
     return DATA;
   },
@@ -132,6 +130,7 @@ var buffer = EventEmitter.compose({
     this._buffer[this._prevIndex(this._back)] = undefined;
     this._back = this._prevIndex(this._back);
     this._dataWritten = false;
+    this._emit(ON_REMOVE);
     
     return DATA;
   },
@@ -139,10 +138,11 @@ var buffer = EventEmitter.compose({
   // Clears data from the buffer and resets 
   clear: function CircularBuffer_clear(data) {
     this._buffer.length = 0;
-    this._buffer.length = this._size;
+    this._buffer.length = this._length;
     this._front = 0;
     this._back = 0;
     this._dataWritten = false;
+    this._emit(ON_REMOVE);
   },
 
   isEmpty: function CircularBuffer_isEmpty() {

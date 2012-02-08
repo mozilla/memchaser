@@ -5,9 +5,9 @@
 const circular_buffer = require("circular-buffer");
 
 exports.test_state = function(test) {
-  var buffer = circular_buffer.CircularBuffer(10);
+  var buffer = circular_buffer.CircularBuffer({length: 10});
   
-  test.assertEqual(buffer.size(), 10, "Size of buffer should be 10");
+  test.assertEqual(buffer.length, 10, "Size of buffer should be 10");
   test.assert(!buffer.isFull(), "Buffer should not be full");
   
   buffer.write({resident:1,GC:2,CC:3});
@@ -19,7 +19,7 @@ exports.test_state = function(test) {
 };
 
 exports.test_readwrite = function(test) {
-  var buffer = circular_buffer.CircularBuffer(5);
+  var buffer = circular_buffer.CircularBuffer({length: 5});
   
   test.assertEqual(buffer.read(), undefined, "An empty read should be undefined");
 
@@ -51,7 +51,7 @@ exports.test_readwrite = function(test) {
 };
 
 exports.test_front_ops = function(test) {
-  var buffer = circular_buffer.CircularBuffer(5);
+  var buffer = circular_buffer.CircularBuffer({length: 5});
 
   buffer.unshift({resident:1,GC:2,CC:3});
   buffer.unshift({resident:1,GC:3,CC:3});
@@ -75,7 +75,7 @@ exports.test_front_ops = function(test) {
 };
 
 exports.test_back_ops = function(test) {
-  var buffer = circular_buffer.CircularBuffer(5);
+  var buffer = circular_buffer.CircularBuffer({length: 5});
 
   buffer.unshift({resident:1,GC:2,CC:3});
   buffer.unshift({resident:1,GC:3,CC:3});
@@ -99,7 +99,7 @@ exports.test_back_ops = function(test) {
 };
 
 exports.test_clear = function(test) {
-  var buffer = circular_buffer.CircularBuffer(5);
+  var buffer = circular_buffer.CircularBuffer({length: 5});
   
   buffer.write({resident:1,GC:2,CC:3});
   buffer.write({resident:1,GC:3,CC:3});
@@ -109,7 +109,7 @@ exports.test_clear = function(test) {
   buffer.clear();
   
   test.assertEqual(buffer.read(), undefined, "An empty read should be undefined");
-  test.assertEqual(buffer.size(), 5, "Buffer's size should be restored");
+  test.assertEqual(buffer.length, 5, "Buffer's size should be restored");
   test.assert(buffer.isEmpty(), "Buffer should be empty");
 
 };
