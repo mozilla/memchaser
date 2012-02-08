@@ -1,7 +1,12 @@
 {
     "name": "memchaser",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
-    "author": "Henrik Skupin <mail@hskupin.info>",
+    "author": "Mozilla QA Automation Services <qa-auto@mozilla.com>",
+    "contributors": [
+        "Henrik Skupin <mail@hskupin.info> (http://www.hskupin.info)",
+        "Dave Hunt <dave.hunt@gmail.com> (http://www.blargon7.com)",
+        "Andrew Petersen <senofpeter@gmail.com> (http://github.com/kirbysayshi)"
+    ],
     "version": "0.2pre",
     "fullName": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
