@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
 
@@ -83,7 +83,7 @@ exports.main = function (options, callbacks) {
       logger.start();
     }
   });
-  
+
   widget.port.on("toggle_tooltip", function (data) {
     if (widget.tooltip === "MemChaser") {
       widget.tooltip = "MemChaser logging is currently " + data.className + ". Click to toggle.";
