@@ -53,3 +53,7 @@ logger.onclick = function toggle() {
   }
   self.port.emit("logging_changed");
 };
+
+logger.onmouseout = logger.onmouseover = function toggle_tooltip() {
+  self.port.emit("toggle_tooltip", logger);
+};

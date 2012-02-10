@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
 
@@ -41,7 +41,7 @@ exports.main = function (options, callbacks) {
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
-    tooltip: "Memchaser logging is disabled. Click circle to enable.",
+    tooltip: "MemChaser",
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
@@ -79,10 +79,17 @@ exports.main = function (options, callbacks) {
   widget.port.on("logging_changed", function () {
     if (logger.active) {
       logger.stop();
-      this.tooltip = "MemChaser logging is disabled. Click circle to enable.";
     } else {
       logger.start();
-      this.tooltip = "MemChaser logging is enabled. Click circle to disable.";
+    }
+  });
+  
+  widget.port.on("toggle_tooltip", function (data) {
+    if (widget.tooltip === "MemChaser") {
+      widget.tooltip = "MemChaser logging is currently " + data.className + ". Click to toggle.";
+    }
+    else {
+      widget.tooltip = "MemChaser";
     }
   });
 };
