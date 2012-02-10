@@ -41,7 +41,7 @@ exports.main = function (options, callbacks) {
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
-    tooltip: "Memchaser logging is disabled. Click to enable.",
+    tooltip: "Memchaser logging is disabled. Click circle to enable.",
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
@@ -79,10 +79,10 @@ exports.main = function (options, callbacks) {
   widget.port.on("logging_changed", function () {
     if (logger.active) {
       logger.stop();
-      this.tooltip = "MemChaser logging is disabled. Click to enable.";
+      this.tooltip = "MemChaser logging is disabled. Click circle to enable.";
     } else {
       logger.start();
-      this.tooltip = "MemChaser logging is enabled. Click to disable.";
+      this.tooltip = "MemChaser logging is enabled. Click circle to disable.";
     }
   });
 };
