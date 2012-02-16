@@ -84,7 +84,10 @@ const reporter = EventEmitter.compose({
       duration: (RegExp.$4) ? RegExp.$4 : RegExp.$3
     }
 
-    this._emit('data', data);
+    let self = this;
+    require("timer").setTimeout(function () {
+      self._emit('data', data);
+    });
   }
 })();
 
