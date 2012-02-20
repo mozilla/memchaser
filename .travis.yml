@@ -2,10 +2,11 @@ language: node_js
 
 before_script:
  - sh -e /etc/init.d/xvfb start
- - DISPLAY=':99.0'
  - git submodule update --init 
  - cd addon-sdk
  - . bin/activate
  - cd ../extension
+env:
+ - DISPLAY=':99.0'
 
 script: cfx test
