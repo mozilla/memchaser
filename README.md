@@ -18,6 +18,12 @@ it's environment:
 To test the extension run:
 
     cd extension
+    cfx testall
+
+
+To run the extension run:
+
+    cd extension
     cfx run
 
 To build simply run `ant` and the default build script/target will be invoked:
