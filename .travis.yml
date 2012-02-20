@@ -6,4 +6,4 @@ before_script:
  - . bin/activate
  - cd ../extension
 
-test: cfx testall
+script: cfx testall
