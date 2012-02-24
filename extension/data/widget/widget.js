@@ -29,6 +29,13 @@ self.port.on("update_garbage_collector", function(data) {
     }
   });
 
+  if (data["igc_supported"]) {
+    document.getElementById("igc_notice").style.display = "inline";
+    if (data["igc_enabled"])
+      document.getElementById("igc_notice").style.color = "green";
+    else
+      document.getElementById("igc_notice").style.color = "#800";
+  }
 });
 
 self.port.on("update_memory", function(data) {
