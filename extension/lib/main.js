@@ -14,6 +14,7 @@ var widgets = require("widget");
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
+var browser_window = require("window-utils").windowIterator().next();
 
 
 var gData = {
@@ -82,6 +83,8 @@ exports.main = function (options, callbacks) {
         data[entry].age = (age * 0.001).toFixed(1);
       }
     }
+    data["igc_supported"] = garbage_collector.igcSupported;
+    data["igc_enabled"] = garbage_collector.igcEnabled(browser_window);
 
     widget.port.emit("update_garbage_collector", data);
     logger.log(gData.current);

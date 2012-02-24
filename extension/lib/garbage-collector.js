@@ -16,6 +16,7 @@ const unload = require("api-utils/unload");
 
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
 const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
+const GC_INCREMENTAL_PREF = "javascript.options.mem.gc_incremental"
 
 
 const reporter = EventEmitter.compose({
@@ -32,6 +33,13 @@ const reporter = EventEmitter.compose({
     if (!this._isEnabled)
       this._enable();
 
+    // Determine whether incremental GC is supported in this binary
+    this._igcSupported = prefs.get(GC_INCREMENTAL_PREF)
+    if (typeof(this._igcSupported) === 'undefined')
+      this._igcSupported = false;
+    else
+      this._igcSupported = true;
+
     Services.console.registerListener(this);
   },
 
@@ -40,6 +48,18 @@ const reporter = EventEmitter.compose({
 
     if (this._isEnabled)
       Services.console.unregisterListener(this);
+  },
+
+  get igcSupported() this._igcSupported,
+
+  igcEnabled: function(window) {
+    if (!this.igcSupported)
+      return false;
+
+    var enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                        .getInterface(Ci.nsIDOMWindowUtils)
+                        .isIncrementalGCEnabled();
+    return enabled;
   },
 
   _enable: function() {
@@ -115,4 +135,6 @@ const reporter = EventEmitter.compose({
 })();
 
 exports.on = reporter.on;
+exports.igcSupported = reporter.igcSupported;
+exports.igcEnabled = reporter.igcEnabled;
 exports.removeListener = reporter.removeListener;
