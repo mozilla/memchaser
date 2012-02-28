@@ -9,13 +9,18 @@ How to build
 Before you can test or build the extension you will have to init the [Add-ons SDK](https://github.com/mozilla/addon-sdk) submodule. After it has been done, activate
 it's environment:
 
-    git submodule init
-    git submodule update
+    git submodule update --init
     cd addon-sdk
     source bin/activate
     cd ..
 
-To test the extension run:
+To run tests against the extension:
+
+    cd extension
+    cfx test
+
+
+To manually test the extension:
 
     cd extension
     cfx run
