@@ -33,13 +33,6 @@ const reporter = EventEmitter.compose({
     if (!this._isEnabled)
       this._enable();
 
-    // Determine whether incremental GC is supported in this binary
-    this._igcSupported = prefs.get(GC_INCREMENTAL_PREF)
-    if (typeof(this._igcSupported) === 'undefined')
-      this._igcSupported = false;
-    else
-      this._igcSupported = true;
-
     Services.console.registerListener(this);
   },
 
@@ -53,13 +46,17 @@ const reporter = EventEmitter.compose({
   get igcSupported() this._igcSupported,
 
   igcEnabled: function(window) {
-    if (!this.igcSupported)
-      return false;
+    var preference = prefs.get(GC_INCREMENTAL_PREF);
 
-    var enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                        .getInterface(Ci.nsIDOMWindowUtils)
-                        .isIncrementalGCEnabled();
-    return enabled;
+    try {
+      var enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                          .getInterface(Ci.nsIDOMWindowUtils)
+                          .isIncrementalGCEnabled();
+    } catch(e) {
+      var enabled = false;
+    }
+
+    return (preference && enabled);
   },
 
   _enable: function() {
