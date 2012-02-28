@@ -6,7 +6,7 @@ MemChaser
 Continuous Integration
 ----------------------
 
-[![Build Status](https://secure.travis-ci.org/whimboo/memchaser.png?branch=master)](http://travis-ci.org/whimboo/memchaser)
+[![Build Status](https://secure.travis-ci.org/mozilla/memchaser.png?branch=master)](http://travis-ci.org/mozilla/memchaser)
 
 How to build
 ------------
