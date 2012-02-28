@@ -30,11 +30,11 @@ self.port.on("update_garbage_collector", function(data) {
   });
 
   if (data["igc_supported"]) {
-    document.getElementById("igc_notice").style.display = "inline";
+    document.getElementById("gc_label").textContent = "IGC: ";
     if (data["igc_enabled"])
-      document.getElementById("igc_notice").style.color = "green";
+      document.getElementById("gc_label").style.color = "green";
     else
-      document.getElementById("igc_notice").style.color = "#800";
+      document.getElementById("gc_label").style.color = "#800";
   }
 });
 
