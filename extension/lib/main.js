@@ -45,7 +45,7 @@ exports.main = function (options, callbacks) {
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
-    width: 400
+    width: 350
   });
 
   var loggerWidget = widgets.Widget({
