@@ -16,7 +16,6 @@ const unload = require("api-utils/unload");
 
 const MEM_LOGGER_PREF = "javascript.options.mem.log";
 const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
-const GC_INCREMENTAL_PREF = "javascript.options.mem.gc_incremental"
 
 
 const reporter = EventEmitter.compose({
@@ -43,20 +42,16 @@ const reporter = EventEmitter.compose({
       Services.console.unregisterListener(this);
   },
 
-  get igcSupported() this._igcSupported,
-
   igcEnabled: function(window) {
-    var preference = prefs.get(GC_INCREMENTAL_PREF);
+    var enabled = false;
 
     try {
-      var enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                          .getInterface(Ci.nsIDOMWindowUtils)
-                          .isIncrementalGCEnabled();
-    } catch(e) {
-      var enabled = false;
-    }
+      enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                      .getInterface(Ci.nsIDOMWindowUtils)
+                      .isIncrementalGCEnabled();
+    } catch(e) {}
 
-    return (preference && enabled);
+    return enabled;
   },
 
   _enable: function() {
@@ -132,6 +127,5 @@ const reporter = EventEmitter.compose({
 })();
 
 exports.on = reporter.on;
-exports.igcSupported = reporter.igcSupported;
 exports.igcEnabled = reporter.igcEnabled;
 exports.removeListener = reporter.removeListener;
