@@ -15,13 +15,13 @@ it's environment:
     source bin/activate
     cd ..
 
-To test the extension run:
+To run tests against the extension:
 
     cd extension
-    cfx testall
+    cfx test
 
 
-To run the extension run:
+To uun the extensioion run:
 
     cd extension
     cfx run
