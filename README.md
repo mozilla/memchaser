@@ -21,7 +21,7 @@ To run tests against the extension:
     cfx test
 
 
-To uun the extensioion run:
+To manually test the extension:
 
     cd extension
     cfx run
