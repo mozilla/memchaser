@@ -52,12 +52,7 @@ self.port.on("update_memory", function(data) {
 });
 
 logger.onclick = function toggle() {
-  if (logger.className === "enabled") {
-    logger.className = "disabled";
-  }
-  else {
-    logger.className = "enabled";
-  }
+  logger.className = logger.className === "enabled" ? "disabled" : "enabled";
   self.port.emit("logging_changed");
 };
 
