@@ -29,11 +29,7 @@ self.port.on("update_garbage_collector", function(data) {
     }
   });
 
-  if (data["igc_enabled"]) {
-    document.getElementById("gc_label").textContent = "iGC: ";
-  } else {
-    document.getElementById("gc_label").textContent = "GC: ";
-  }
+  document.getElementById("gc_label").textContent = data["igc_enabled"] ? "iGC" : "GC";
 });
 
 self.port.on("update_memory", function(data) {
