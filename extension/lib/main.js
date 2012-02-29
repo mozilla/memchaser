@@ -16,6 +16,8 @@ var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
 var browser_window = require("window-utils").windowIterator().next();
 
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
+
 
 var gData = {
   current: {
@@ -27,8 +29,6 @@ var gData = {
     garbage_collector: { }
   }
 };
-
-const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 exports.main = function (options, callbacks) {
@@ -42,47 +42,37 @@ exports.main = function (options, callbacks) {
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
+    tooltip: "MemChaser",
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
-    width: 400
-  });
-
-  var loggerWidget = widgets.Widget({
-    id: "memchaser-logger-widget",
-    label: "MemChaser logging",
-    tooltip: "MemChaser logging is disabled. Click to enable.",
-    contentURL: [self.data.url("widget/loggerWidget.html")],
-    contentScriptFile: [self.data.url("widget/loggerWidget.js")],
-    contentScriptWhen: "ready",
-    width: 16,
-    onClick: function() {
-      if (logger.active) {
-        logger.stop();
-        this.tooltip = "MemChaser logging is disabled. Click to enable.";
-      } else {
-        logger.start();
-        this.tooltip = "MemChaser logging is enabled. Click to disable.";
-      }
-      this.port.emit("logging_changed", logger.active);
-    }
+    width: 360
   });
 
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
+    function getDuration(entry) {
+      return entry.duration || entry.MaxPause || entry.Total || entry.TotalTime;
+    }
+
     for (var entry in data) {
+      // Backup previous entry if one exists
       if (entry in gData.current.garbage_collector) {
         gData.previous.garbage_collector[entry] = gData.current.garbage_collector[entry];
       }
       gData.current.garbage_collector[entry] = data[entry];
 
+      var duration = getDuration(data[entry]);
+      data[entry].duration = duration;
+
       if (entry in gData.previous.garbage_collector) {
         var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
         var previousTime = gData.previous.garbage_collector[entry].timestamp.getTime();
-        var age = (currentTime - previousTime) - gData.current.garbage_collector[entry].duration;
+        var age = (currentTime - previousTime) - duration;
         data[entry].age = (age * 0.001).toFixed(1);
       }
-    }
+    };
+
     data["igc_supported"] = garbage_collector.igcSupported;
     data["igc_enabled"] = garbage_collector.igcEnabled(browser_window);
 
@@ -95,6 +85,29 @@ exports.main = function (options, callbacks) {
     gData.current.memory = data;
     widget.port.emit("update_memory", data);
     logger.log(gData.current);
+  });
+
+  // If logger is clicked, then the state must be changed
+  widget.port.on("logging_changed", function () {
+    if (logger.active) {
+      logger.stop();
+    } else {
+      logger.start();
+    }
+  });
+
+  widget.port.on("update_tooltip", function (data) {
+    switch(data) {
+      case "logger":
+        if (logger.active) {
+          widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
+        } else {
+          widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
+        }
+        break;
+      default:
+        widget.tooltip = "MemChaser";
+    }
   });
 };
 

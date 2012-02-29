@@ -2,6 +2,7 @@ const BYTE_TO_MEGABYTE = 1/1048576;
 
 const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
 
+var logger = document.getElementById("logger");
 
 function hide_init() {
   document.getElementById("init").style.display = "none";
@@ -43,3 +44,16 @@ self.port.on("update_memory", function(data) {
     }
   });
 });
+
+logger.onclick = function toggle() {
+  logger.className = (logger.className === "enabled") ? "disabled" : "enabled";
+  self.port.emit("logging_changed");
+};
+
+logger.onmouseover = function update_tooltip() {
+  self.port.emit("update_tooltip", logger.id);
+};
+
+logger.onmouseout = function update_tooltip() {
+  self.port.emit("update_tooltip");
+};
