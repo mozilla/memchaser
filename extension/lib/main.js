@@ -87,12 +87,16 @@ exports.main = function (options, callbacks) {
     }
   });
 
-  widget.port.on("toggle_tooltip", function (data) {
-    if (widget.tooltip === "MemChaser") {
-      widget.tooltip = "MemChaser logging is currently " + data.className + ". Click to toggle.";
-    }
-    else {
-      widget.tooltip = "MemChaser";
+  widget.port.on("update_tooltip", function (data) {
+    switch(data) {
+      case "logger_enabled":
+        widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
+        break;
+      case "logger_disabled":
+        widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
+        break;
+      default:
+        widget.tooltip = "MemChaser";
     }
   });
 };

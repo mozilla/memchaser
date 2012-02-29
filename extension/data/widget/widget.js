@@ -52,10 +52,14 @@ self.port.on("update_memory", function(data) {
 });
 
 logger.onclick = function toggle() {
-  logger.className = logger.className === "enabled" ? "disabled" : "enabled";
+  logger.className = (logger.className === "enabled") ? "disabled" : "enabled";
   self.port.emit("logging_changed");
 };
 
-logger.onmouseout = logger.onmouseover = function toggle_tooltip() {
-  self.port.emit("toggle_tooltip", logger);
+logger.onmouseover = function update_tooltip() {
+  self.port.emit("update_tooltip", "logger_" + logger.className);
+};
+
+logger.onmouseout = function update_tooltip() {
+  self.port.emit("update_tooltip");
 };
