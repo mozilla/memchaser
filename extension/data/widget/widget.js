@@ -18,6 +18,12 @@ self.port.on("update_garbage_collector", function(data) {
     if (!data[aType])
       return;
 
+    // If MaxPause is reported we have an incremental GC
+    if (aType === "gc") {
+      var label = document.getElementById("gc_label");
+      label.textContent = ("MaxPause" in data[aType]) ? "iGC: " : "GC: ";
+    }
+
     var duration = document.getElementById(aType + "_duration");
     duration.textContent = data[aType].duration + "ms";
 
@@ -29,14 +35,6 @@ self.port.on("update_garbage_collector", function(data) {
       age.textContent = " (" + data[aType].age + "s)";
     }
   });
-
-  if (data["igc_supported"]) {
-    document.getElementById("igc_notice").style.display = "inline";
-    if (data["igc_enabled"])
-      document.getElementById("igc_notice").style.color = "green";
-    else
-      document.getElementById("igc_notice").style.color = "#800";
-  }
 });
 
 self.port.on("update_memory", function(data) {
@@ -54,6 +52,7 @@ self.port.on("update_memory", function(data) {
 logger.onclick = function toggle() {
   logger.className = (logger.className === "enabled") ? "disabled" : "enabled";
   self.port.emit("logging_changed");
+  self.port.emit("update_tooltip", logger.id);
 };
 
 logger.onmouseover = function update_tooltip() {
