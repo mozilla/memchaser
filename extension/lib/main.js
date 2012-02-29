@@ -46,7 +46,7 @@ exports.main = function (options, callbacks) {
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
-    width: 350
+    width: 360
   });
 
   // If new data from garbage collector is available update global data
