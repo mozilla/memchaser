@@ -89,11 +89,12 @@ exports.main = function (options, callbacks) {
 
   widget.port.on("update_tooltip", function (data) {
     switch(data) {
-      case "logger_enabled":
-        widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
-        break;
-      case "logger_disabled":
-        widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
+      case "logger":
+        if (logger.active) {
+          widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
+        } else {
+          widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
+        }
         break;
       default:
         widget.tooltip = "MemChaser";

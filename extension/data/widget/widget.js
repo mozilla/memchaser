@@ -57,7 +57,7 @@ logger.onclick = function toggle() {
 };
 
 logger.onmouseover = function update_tooltip() {
-  self.port.emit("update_tooltip", "logger_" + logger.className);
+  self.port.emit("update_tooltip", logger.id);
 };
 
 logger.onmouseout = function update_tooltip() {
