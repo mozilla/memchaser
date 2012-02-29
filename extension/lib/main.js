@@ -16,6 +16,8 @@ var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
 var browser_window = require("window-utils").windowIterator().next();
 
+const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
+
 
 var gData = {
   current: {
@@ -27,8 +29,6 @@ var gData = {
     garbage_collector: { }
   }
 };
-
-const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 exports.main = function (options, callbacks) {
@@ -51,19 +51,28 @@ exports.main = function (options, callbacks) {
 
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
+    function getDuration(entry) {
+      return entry.duration || entry.MaxPause || entry.Total || entry.TotalTime;
+    }
+
     for (var entry in data) {
+      // Backup previous entry if one exists
       if (entry in gData.current.garbage_collector) {
         gData.previous.garbage_collector[entry] = gData.current.garbage_collector[entry];
       }
       gData.current.garbage_collector[entry] = data[entry];
 
+      var duration = getDuration(data[entry]);
+      data[entry].duration = duration;
+
       if (entry in gData.previous.garbage_collector) {
         var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
         var previousTime = gData.previous.garbage_collector[entry].timestamp.getTime();
-        var age = (currentTime - previousTime) - gData.current.garbage_collector[entry].duration;
+        var age = (currentTime - previousTime) - duration;
         data[entry].age = (age * 0.001).toFixed(1);
       }
-    }
+    };
+
     data["igc_supported"] = garbage_collector.igcSupported;
     data["igc_enabled"] = garbage_collector.igcEnabled(browser_window);
 
