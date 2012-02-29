@@ -15,7 +15,6 @@ Components.utils.import('resource://gre/modules/Services.jsm');
 
 const PREF_MEM_LOGGER = "javascript.options.mem.log";
 const PREF_MODIFIED_PREFS = "extensions." + require("self").id + ".modifiedPrefs";
-const PREF_INCREMENTAL_GC = "javascript.options.mem.gc_incremental";
 
 
 const reporter = EventEmitter.compose({
@@ -31,13 +30,6 @@ const reporter = EventEmitter.compose({
     this._isEnabled = prefs.get(PREF_MEM_LOGGER);
     if (!this._isEnabled)
       this._enable();
-
-    // Determine whether incremental GC is supported in this binary
-    this._igcSupported = prefs.get(PREF_INCREMENTAL_GC)
-    if (typeof(this._igcSupported) === 'undefined')
-      this._igcSupported = false;
-    else
-      this._igcSupported = true;
 
     // When we have to parse console messages find the right data
     switch (config.APP_BRANCH) {
@@ -60,18 +52,6 @@ const reporter = EventEmitter.compose({
 
     if (this._isEnabled)
       Services.console.unregisterListener(this);
-  },
-
-  get igcSupported() this._igcSupported,
-
-  igcEnabled: function(window) {
-    if (!this.igcSupported)
-      return false;
-
-    var enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                        .getInterface(Ci.nsIDOMWindowUtils)
-                        .isIncrementalGCEnabled();
-    return enabled;
   },
 
   _enable: function() {
@@ -132,6 +112,4 @@ const reporter = EventEmitter.compose({
 
 
 exports.on = reporter.on;
-exports.igcSupported = reporter.igcSupported;
-exports.igcEnabled = reporter.igcEnabled;
 exports.removeListener = reporter.removeListener;
