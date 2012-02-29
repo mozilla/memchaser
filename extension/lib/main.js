@@ -73,9 +73,6 @@ exports.main = function (options, callbacks) {
       }
     };
 
-    data["igc_supported"] = garbage_collector.igcSupported;
-    data["igc_enabled"] = garbage_collector.igcEnabled(browser_window);
-
     widget.port.emit("update_garbage_collector", data);
     logger.log(gData.current);
   });

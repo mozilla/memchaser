@@ -54,18 +54,6 @@ const reporter = EventEmitter.compose({
       Services.console.unregisterListener(this);
   },
 
-  igcEnabled: function(window) {
-    var enabled = false;
-
-    try {
-      enabled = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                      .getInterface(Ci.nsIDOMWindowUtils)
-                      .isIncrementalGCEnabled();
-    } catch(e) {}
-
-    return enabled;
-  },
-
   _enable: function() {
     var modifiedPrefs = JSON.parse(prefs.get(PREF_MODIFIED_PREFS, "{}"));
     if (!modifiedPrefs.hasOwnProperty(PREF_MEM_LOGGER)) {
@@ -124,5 +112,4 @@ const reporter = EventEmitter.compose({
 
 
 exports.on = reporter.on;
-exports.igcEnabled = reporter.igcEnabled;
 exports.removeListener = reporter.removeListener;
