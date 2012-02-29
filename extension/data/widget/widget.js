@@ -52,6 +52,7 @@ self.port.on("update_memory", function(data) {
 logger.onclick = function toggle() {
   logger.className = (logger.className === "enabled") ? "disabled" : "enabled";
   self.port.emit("logging_changed");
+  self.port.emit("update_tooltip", logger.id);
 };
 
 logger.onmouseover = function update_tooltip() {
