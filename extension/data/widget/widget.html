@@ -13,8 +13,25 @@
       display: none;
     }
 
+    #logger {
+      margin: 0.5px 0 0 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 6px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
     .warning {
       color: #800;
+    }
+
+    .enabled {
+      background-color: #080;
+    }
+
+    .disabled {
+      background-color: #800;
     }
   </style>
 </head>
@@ -29,5 +46,6 @@
     <span>CC: </span>
     <span id="cc_duration">n/a</span><span id="cc_age"></span>
   </p>
+  <div id="logger" class="disabled"/>
 </body>
 </html>
