@@ -42,30 +42,11 @@ exports.main = function (options, callbacks) {
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
+    tooltip: "MemChaser",
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
-    width: 350
-  });
-
-  var loggerWidget = widgets.Widget({
-    id: "memchaser-logger-widget",
-    label: "MemChaser logging",
-    tooltip: "MemChaser logging is disabled. Click to enable.",
-    contentURL: [self.data.url("widget/loggerWidget.html")],
-    contentScriptFile: [self.data.url("widget/loggerWidget.js")],
-    contentScriptWhen: "ready",
-    width: 16,
-    onClick: function() {
-      if (logger.active) {
-        logger.stop();
-        this.tooltip = "MemChaser logging is disabled. Click to enable.";
-      } else {
-        logger.start();
-        this.tooltip = "MemChaser logging is enabled. Click to disable.";
-      }
-      this.port.emit("logging_changed", logger.active);
-    }
+    width: 360
   });
 
   // If new data from garbage collector is available update global data
@@ -95,6 +76,29 @@ exports.main = function (options, callbacks) {
     gData.current.memory = data;
     widget.port.emit("update_memory", data);
     logger.log(gData.current);
+  });
+
+  // If logger is clicked, then the state must be changed
+  widget.port.on("logging_changed", function () {
+    if (logger.active) {
+      logger.stop();
+    } else {
+      logger.start();
+    }
+  });
+
+  widget.port.on("update_tooltip", function (data) {
+    switch(data) {
+      case "logger":
+        if (logger.active) {
+          widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
+        } else {
+          widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
+        }
+        break;
+      default:
+        widget.tooltip = "MemChaser";
+    }
   });
 };
 
