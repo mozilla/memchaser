@@ -121,6 +121,26 @@ const GARBAGE_COLLECTOR_DATA = {
     }
 };
 
+/**
+ * Tooltip dictionary
+ */
+const TOOLTIP_DICT = {
+  "resident_label": "Memory used by the process that is present in physical memory. " +
+                    "It does not necessarily have to match the process manager.",
+  "resident_data": "Memory used by the process that is present in physical memory. " +
+                   "It does not necessarily have to match the process manager.",
+  "gc_label": "GC stands for garbage collection. It attempts to " +
+              "free up Javascript memory that the program no longer uses.",
+  "gc_duration": "Duration of the last garbage collector activity.",
+  "gc_age": "The interval between the last two garbage collection activities.",
+  "cc_label": "CC stands for cycle collection. It attempts to find and free " +
+              "groups of XPCOM objects that only refer to each other.",
+  "cc_duration": "Duration of the last cycle collector activity.",
+  "cc_age": "The interval between the last two cycle collection activities.",
+  "logger_enabled": "MemChaser logging is currently enabled. Click to disable.",
+  "logger_disabled": "MemChaser logging is currently disabled. Click to enable." 
+};
 
 exports.APP_BRANCH = APP_BRANCH;
 exports.GARBAGE_COLLECTOR_DATA = GARBAGE_COLLECTOR_DATA;
+exports.TOOLTIP_DICT = TOOLTIP_DICT;
