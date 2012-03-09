@@ -3,20 +3,29 @@ MemChaser
 
 [MemChaser](https://wiki.mozilla.org/QA/Automation_Services/Projects/Addons/MemChaser) is a Firefox extension which keeps track of the garbage collector activity and memory usage.
 
+Continuous Integration
+----------------------
+
+[![Build Status](https://secure.travis-ci.org/mozilla/memchaser.png?branch=master)](http://travis-ci.org/mozilla/memchaser)
+
 How to build
 ------------
 
-Before you can test or build the extension you will have to clone the [Add-ons SDK](https://github.com/mozilla/addon-sdk). After it has been done, activate
+Before you can test or build the extension you will have to init the [Add-ons SDK](https://github.com/mozilla/addon-sdk) submodule. After it has been done, activate
 it's environment:
 
-    git clone https://github.com/mozilla/addon-sdk
+    git submodule update --init
     cd addon-sdk
-    git fetch
-    git checkout 1.4.2
     source bin/activate
     cd ..
 
-To test the extension run:
+To run tests against the extension:
+
+    cd extension
+    cfx test
+
+
+To manually test the extension:
 
     cd extension
     cfx run

@@ -4,16 +4,17 @@
 
 "use strict";
 
-Components.utils.import('resource://gre/modules/Services.jsm');
-
-
-const {Cc,Ci} = require("chrome");
-
+const {Cc, Ci} = require("chrome");
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const unload = require("api-utils/unload");
 
-const MEM_LOGGER_PREF = "javascript.options.mem.log";
+const config = require("config");
+
+Components.utils.import('resource://gre/modules/Services.jsm');
+
+const PREF_MEM_LOGGER = "javascript.options.mem.log";
+const PREF_MODIFIED_PREFS = "extensions." + require("self").id + ".modifiedPrefs";
 
 
 const reporter = EventEmitter.compose({
@@ -26,18 +27,21 @@ const reporter = EventEmitter.compose({
 
     // For now the logger preference has to be enabled to be able to
     // parse the GC / CC information from the console service messages
-    this._isEnabled = prefs.get(MEM_LOGGER_PREF);
-    if (!this._isEnabled) {
-      prefs.set(MEM_LOGGER_PREF, true);
+    this._isEnabled = prefs.get(PREF_MEM_LOGGER);
+    if (!this._isEnabled)
+      this._enable();
 
-      var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                    .getService(Ci.nsIPromptService);
-      var msg = "In being able to show Garbage Collector information, Firefox has to be restarted.";
-
-      if (prompts.confirm(null, "MemChaser - Restart Request", msg)) {
-        var startup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
-        startup.quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
-      }
+    // When we have to parse console messages find the right data
+    switch (config.APP_BRANCH) {
+      case 10:
+        this._collector_data = config.GARBAGE_COLLECTOR_DATA["10"];
+        break;
+      case 11:
+      case 12:
+        this._collector_data = config.GARBAGE_COLLECTOR_DATA["11"];
+        break;
+      default:
+        this._collector_data = config.GARBAGE_COLLECTOR_DATA["13"];
     }
 
     Services.console.registerListener(this);
@@ -50,44 +54,62 @@ const reporter = EventEmitter.compose({
       Services.console.unregisterListener(this);
   },
 
-  get isEnabled() this._isEnabled,
+  _enable: function() {
+    var modifiedPrefs = JSON.parse(prefs.get(PREF_MODIFIED_PREFS, "{}"));
+    if (!modifiedPrefs.hasOwnProperty(PREF_MEM_LOGGER)) {
+      modifiedPrefs[PREF_MEM_LOGGER] = prefs.get(PREF_MEM_LOGGER);
+    }
+    prefs.set(PREF_MEM_LOGGER, true);
+    prefs.set(PREF_MODIFIED_PREFS, JSON.stringify(modifiedPrefs));
+    this._isEnabled = true;
+  },
 
   /**
    * Until we have an available API to retrieve GC related information we have to
    * parse the console messages in the Error Console
-   *
-   * Firefox <11
-   * GC mode: full, timestamp: 1325854678521066, duration: 32 ms.
-   * CC timestamp: 1325854683540071, collected: 75 (75 waiting for GC),
-   *               suspected: 378, duration: 19 ms.
-   *
-   * Firefox >=11
-   * GC(T+0.0) Type:Glob, Total:27.9, Wait:0.6, Mark:13.4, Sweep:12.6, FinObj:3.7,
-   *           FinStr:0.2, FinScr:0.5, FinShp:2.1, DisCod:0.3, DisAnl:3.0,
-   *           XPCnct:0.8, Destry:0.0, End:2.1, +Chu:16, -Chu:0, Reason:DestC
-   * CC(T+9.6) collected: 1821 (1821 waiting for GC), suspected: 18572,
-   *           duration: 31 ms.
    **/
-  observe: function(aMessage) {
+  observe: function Reporter_observe(aMessage) {
     var msg = aMessage.message;
 
-    // Only process messages from the garbage collector
-    if (! msg.match(/^(CC|GC).*/i))
+    var sections = /^(CC|GC)/i.exec(msg);
+    if (sections === null)
       return;
 
-    // Parse GC/CC duration from the message
-    /^(CC|GC).*(duration: ([\d\.]+)|Total:([\d\.]+))/i.exec(msg);
+    var data = this.parseConsoleMessage(sections[1].toLowerCase(), msg);
 
-    var data = { };
-    data[RegExp.$1.toLowerCase()] = {
-      timestamp: new Date(),
-      duration: (RegExp.$4) ? RegExp.$4 : RegExp.$3
+    let self = this;
+    require("timer").setTimeout(function () {
+      self._emit("data", data);
+    });
+  },
+
+  /**
+   * Parse the console message for all wanted entries
+   */
+  parseConsoleMessage : function Reporter_parseConsoleMessage(aType, aMessage) {
+    /**
+     * Inline function to retrieve the value for a given key
+     */
+    function getValueFor(aKey, aRegex) {
+      var regexp = new RegExp(aKey + ":" + aRegex, "i");
+      var matches = regexp.exec(aMessage);
+
+      return matches ? matches[1] : undefined;
     }
 
-    this._emit('data', data);
+    var data = { };
+    data[aType] = {
+      timestamp : new Date()
+    };
+
+    this._collector_data[aType].forEach(function (aEntry) {
+      data[aType][aEntry.label] = getValueFor(aEntry.label, aEntry.regex)
+    });
+
+    return data;
   }
 })();
 
-exports.isEnabled = reporter.isEnabled;
+
 exports.on = reporter.on;
 exports.removeListener = reporter.removeListener;
