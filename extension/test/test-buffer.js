@@ -70,6 +70,7 @@ exports.test_front_ops = function(test) {
   test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 6");
   test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 5");
   test.assertEqual(buffer.shift().GC, 4, "GC field in shifted data should be 4");
+
   test.assertEqual(buffer.shift(), undefined, "GC field in shifted data should be undefined");
   test.assert(buffer.isEmpty(), "Buffer should be empty");
 };
@@ -113,3 +114,95 @@ exports.test_clear = function(test) {
   test.assert(buffer.isEmpty(), "Buffer should be empty");
 
 };
+
+exports.test_resize_smaller = function(test) {
+  var buffer = circular_buffer.CircularBuffer({length: 6});
+
+  buffer.write({resident:1,GC:1,CC:3});
+  buffer.write({resident:1,GC:2,CC:3});
+  buffer.write({resident:1,GC:3,CC:3});
+  buffer.write({resident:1,GC:4,CC:3});
+  buffer.write({resident:1,GC:5,CC:3});
+  buffer.write({resident:1,GC:6,CC:3});
+
+  buffer.length = 4;
+
+  test.assertEqual(buffer.shift().GC, 3, "GC field in shifted data should be 3");
+  test.assertEqual(buffer.shift().GC, 4, "GC field in shifted data should be 4");
+  test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 5");
+  test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 6");
+
+  test.assert(buffer.isEmpty(), "Buffer should be empty");
+}
+
+exports.test_resize_smaller_with_write_after = function(test) {
+  var buffer = circular_buffer.CircularBuffer({length: 6});
+
+  buffer.write({resident:1,GC:1,CC:3});
+  buffer.write({resident:1,GC:2,CC:3});
+  buffer.write({resident:1,GC:3,CC:3});
+  buffer.write({resident:1,GC:4,CC:3});
+  buffer.write({resident:1,GC:5,CC:3});
+  buffer.write({resident:1,GC:6,CC:3});
+
+  buffer.length = 4;
+
+  buffer.write({resident:1,GC:7,CC:3});
+  buffer.write({resident:1,GC:8,CC:3});
+
+  test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 3");
+  test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 4");
+  test.assertEqual(buffer.shift().GC, 7, "GC field in shifted data should be 5");
+  test.assertEqual(buffer.shift().GC, 8, "GC field in shifted data should be 6");
+
+  test.assert(buffer.isEmpty(), "Buffer should be empty");
+}
+
+exports.test_resize_bigger = function(test) {
+  var buffer = circular_buffer.CircularBuffer({length: 6});
+
+  buffer.write({resident:1,GC:1,CC:3});
+  buffer.write({resident:1,GC:2,CC:3});
+  buffer.write({resident:1,GC:3,CC:3});
+  buffer.write({resident:1,GC:4,CC:3});
+  buffer.write({resident:1,GC:5,CC:3});
+  buffer.write({resident:1,GC:6,CC:3});
+
+  buffer.length = 8;
+
+  test.assertEqual(buffer.shift().GC, 1, "GC field in shifted data should be 1");
+  test.assertEqual(buffer.shift().GC, 2, "GC field in shifted data should be 2");
+  test.assertEqual(buffer.shift().GC, 3, "GC field in shifted data should be 3");
+  test.assertEqual(buffer.shift().GC, 4, "GC field in shifted data should be 4");
+  test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 5");
+  test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 6");
+
+  test.assert(!buffer.isFull(), "Buffer should not be full");
+}
+
+exports.test_resize_bigger_with_write_after = function(test) {
+  var buffer = circular_buffer.CircularBuffer({length: 6});
+
+  buffer.write({resident:1,GC:1,CC:3});
+  buffer.write({resident:1,GC:2,CC:3});
+  buffer.write({resident:1,GC:3,CC:3});
+  buffer.write({resident:1,GC:4,CC:3});
+  buffer.write({resident:1,GC:5,CC:3});
+  buffer.write({resident:1,GC:6,CC:3});
+
+  buffer.length = 8;
+
+  buffer.write({resident:1,GC:7,CC:3});
+  buffer.write({resident:1,GC:8,CC:3});
+
+  test.assertEqual(buffer.shift().GC, 1, "GC field in shifted data should be 1");
+  test.assertEqual(buffer.shift().GC, 2, "GC field in shifted data should be 2");
+  test.assertEqual(buffer.shift().GC, 3, "GC field in shifted data should be 3");
+  test.assertEqual(buffer.shift().GC, 4, "GC field in shifted data should be 4");
+  test.assertEqual(buffer.shift().GC, 5, "GC field in shifted data should be 5");
+  test.assertEqual(buffer.shift().GC, 6, "GC field in shifted data should be 6");
+  test.assertEqual(buffer.shift().GC, 7, "GC field in shifted data should be 7");
+  test.assertEqual(buffer.shift().GC, 8, "GC field in shifted data should be 8");
+
+  test.assert(!buffer.isFull(), "Buffer should not be full");
+}

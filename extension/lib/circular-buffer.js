@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 'use strict';
 
@@ -14,16 +14,16 @@ var buffer = EventEmitter.compose({
     this._length = options.length || 60;
     if (this._length < 1) {
       throw {
-        name:    'Input Error',
+        name:    'RangeError',
         message: 'Invalid length'
       };
     }
-    
+
     this._front = 0;
     this._back = 0;
     this._buffer = [];
     this._buffer.length = this._length;
-    this._dataWritten = false;
+    this._count = 0;
     
     // Report unhandled errors from listeners
     this.on('error', console.exception.bind(console));
@@ -31,8 +31,48 @@ var buffer = EventEmitter.compose({
     // Make sure we clean-up correctly
     unload.ensure(this, 'unload');
   },
+
+  get count() {
+    return this._count;
+  },
   
-  get length() this._length,
+  get length() {
+    return this._length;
+  },
+
+  set length(newLength) {
+    if (newLength < 0) {
+      throw {
+        name:    'RangeError',
+        message: 'Invalid length'
+      };
+    }
+
+    // L51-63: Normalize the circular buffer as a FIFO buffer
+    if (this._front > this._back) {
+      this._buffer.push.apply(this._buffer, 
+                              this._buffer.slice(this._front));
+      this._buffer.push.apply(this._buffer, 
+                              this._buffer.slice(this._back,this._front));
+    }
+    else {
+      this._buffer.push.apply(this._buffer, 
+                              this._buffer.slice(this._front,this._back));
+    }
+
+    this._buffer = this._buffer.slice(0,this._length);
+
+    // Truncate the oldest elements if new length is less than original
+    if (val < this._length) {
+      this._buffer = this._buffer.slice(this._length - val);
+    }
+
+    this._buffer.length = val;
+    this._length = val;
+    this._front = 0;
+    this._count = Math.min(this._count, val);
+    this._back = this._nextIndex(this._count - 1);
+  },
   
   // Returns the next index, adjusted for cycles
   _nextIndex: function CircularBuffer_nextIndex(index) {
@@ -69,9 +109,9 @@ var buffer = EventEmitter.compose({
         index += this._length;
       }
     }
-    
+
     const DATA = this._buffer[index];
-    
+
     return DATA;
   },
   
@@ -80,10 +120,12 @@ var buffer = EventEmitter.compose({
     if (this.isFull()) {
       this._front = this._nextIndex(this._front);
     }
+    else {
+      this._count += 1;
+    }
     
     this._buffer[this._back] = data;
     this._back = this._nextIndex(this._back);
-    this._dataWritten = true;
     this._emit(ON_WRITE, data);
   },
 
@@ -93,10 +135,12 @@ var buffer = EventEmitter.compose({
     if (this.isFull()) {
       this._back = this._prevIndex(this._back);
     }
+    else {
+      this._count += 1;
+    }
 
     this._front = this._prevIndex(this._front);
     this._buffer[this._front] = data;
-    this._dataWritten = true;
     this._emit(ON_WRITE, data);
   },
   
@@ -106,10 +150,13 @@ var buffer = EventEmitter.compose({
     if (typeof(DATA) === 'undefined') {
       return undefined;
     }
+
+    if (!this.isEmpty()) {
+      this._count -= 1;
+    }
     
     this._buffer[this._front] = undefined;
     this._front = this._nextIndex(this._front);
-    this._dataWritten = false;
     this._emit(ON_REMOVE);
     
     return DATA;
@@ -126,10 +173,13 @@ var buffer = EventEmitter.compose({
     if (typeof(DATA) === 'undefined') {
       return undefined;
     }
+
+    if (!this.isEmpty()) {
+      this._count -= 1;
+    }
     
     this._buffer[this._prevIndex(this._back)] = undefined;
     this._back = this._prevIndex(this._back);
-    this._dataWritten = false;
     this._emit(ON_REMOVE);
     
     return DATA;
@@ -141,24 +191,16 @@ var buffer = EventEmitter.compose({
     this._buffer.length = this._length;
     this._front = 0;
     this._back = 0;
-    this._dataWritten = false;
+    this._count = 0;
     this._emit(ON_REMOVE);
   },
 
   isEmpty: function CircularBuffer_isEmpty() {
-    if (this._front !== this._back) {
-      return false;
-    }
-    
-    return !this._dataWritten;
+    return this._count === 0;
   },
   
   isFull: function CircularBuffer_isFull() {
-    if (this._front !== this._back) {
-      return false;
-    }
-    
-    return this._dataWritten;
+    return this._count === this._length;
   }
 });
 
