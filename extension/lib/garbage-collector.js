@@ -44,14 +44,23 @@ const reporter = EventEmitter.compose({
         this._collector_data = config.extension.gc_app_data["14"];
     }
 
-    Services.console.registerListener(this);
+    if (config.APP_BRANCH >= 14) {
+      Services.obs.addObserver(this, "garbage-collection-statistics", false);
+      Services.obs.addObserver(this, "cycle-collection-statistics", false);
+    } else {
+      Services.console.registerListener(this);
+    }
   },
 
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (this._isEnabled)
+    if (config.APP_BRANCH >= 14) {
+      Services.obs.removeObserver(this, "garbage-collection-statistics");
+      Services.obs.removeObserver(this, "cycle-collection-statistics");
+    } else {
       Services.console.unregisterListener(this);
+    }
   },
 
   _enable: function() {
@@ -68,23 +77,43 @@ const reporter = EventEmitter.compose({
     this._isEnabled = true;
   },
 
-  /**
-   * Until we have an available API to retrieve GC related information we have to
-   * parse the console messages in the Error Console
-   **/
-  observe: function Reporter_observe(aMessage) {
-    var msg = aMessage.message;
+  observe: function Reporter_observe(aSubject, aTopic, aData) {
+    if (config.APP_BRANCH < 14) {
+      var msg = aSubject.message;
 
-    var sections = /^(CC|GC)/i.exec(msg);
-    if (sections === null)
+      var sections = /^(CC|GC)/i.exec(msg);
+      if (sections === null)
+        return;
+
+      var data = this.parseConsoleMessage(sections[1].toLowerCase(), msg);
+
+      let self = this;
+      require("timer").setTimeout(function () {
+        self._emit("data", data);
+      });
       return;
+    }
 
-    var data = this.parseConsoleMessage(sections[1].toLowerCase(), msg);
-
-    let self = this;
-    require("timer").setTimeout(function () {
-      self._emit("data", data);
-    });
+    var data = JSON.parse(aData);
+    var output = {};
+    if (aTopic === "garbage-collection-statistics") {
+      output.gc = {
+        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
+        'nonincremental_reason': data.nonincremental_reason,
+        'Max Pause' : data.max_pause,
+        'Total Time' : data.total_time,
+        'Type' : data.type,
+        'Reason' : data.Slices[0].reason
+      };
+    } else {
+      output.cc = {
+        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
+        'collected' : data.collected.RCed + data.collected.GCed,
+        'duration' : data.duration,
+        'suspected' : data.suspected
+      };
+    }
+    this._emit('data', output);
   },
 
   /**
