@@ -40,8 +40,11 @@ const reporter = EventEmitter.compose({
       case 12:
         this._collector_data = config.GARBAGE_COLLECTOR_DATA["11"];
         break;
-      default:
+      case 13:
         this._collector_data = config.GARBAGE_COLLECTOR_DATA["13"];
+        break;
+      default:
+        this._collector_data = config.GARBAGE_COLLECTOR_DATA["14"];
     }
 
     Services.console.registerListener(this);

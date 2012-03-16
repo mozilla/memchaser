@@ -52,7 +52,13 @@ exports.main = function (options, callbacks) {
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
     function getDuration(entry) {
-      return entry.duration || entry.MaxPause || entry.Total || entry.TotalTime;
+      return entry.duration ||
+             (entry.MaxPause || entry['Max Pause']) ||
+             (entry.Total || entry.TotalTime || entry['Total Time']);
+    }
+
+    function isIncremental(entry) {
+      return (entry["MaxPause"] || entry["Max Pause"]) ? true : false;
     }
 
     for (var entry in data) {
@@ -64,6 +70,9 @@ exports.main = function (options, callbacks) {
 
       var duration = getDuration(data[entry]);
       data[entry].duration = duration;
+      if (entry === "gc") {
+        data[entry].isIncremental = isIncremental(data[entry]);
+      }
 
       if (entry in gData.previous.garbage_collector) {
         var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();

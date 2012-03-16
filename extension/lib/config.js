@@ -78,6 +78,46 @@ const GARBAGE_COLLECTOR_DATA = {
           { label: "Type", regex: " (\\w+)" },
           { label: "Reason", regex: "\\s*(\\w+)" },
         ]
+    },
+    "14" : {
+        // GC(T+9.7) Total Time: 21.4ms, Type: global, MMU (20ms): 0%, MMU (50ms): 57%,
+        //           Reason: CC_WAITING, Nonincremental Reason: GC mode, +Chunks: 0,
+        //           -Chunks: 0
+        //           Totals: Mark: 17.0ms, Mark Roots: 2.1ms, Mark Other: 1.3ms,
+        //           Sweep: 4.1ms, Sweep Object: 0.5ms, Sweep String: 0.0ms,
+        //           Sweep Script: 0.1ms, Sweep Shape: 0.8ms, Discard Code: 0.2ms,
+        //           Discard Analysis: 0.2ms, XPConnect: 0.5ms, Deallocate: 0.1ms
+        //
+        // GC(T+73.6) Total Time: 34.2ms, Type: global, MMU (20ms): 33%, MMU (50ms): 73%,
+        //            Max Pause: 13.3ms, +Chunks: 0, -Chunks: 0
+        //              Slice: 0, Time: 13.3ms (Pause: 13.3, Reason: CC_WAITING):
+        //                Mark: 12.8ms, Mark Roots: 2.8ms
+        //              Slice: 3, Time: 337.2ms (Pause: 9.1, Reason: INTER_SLICE_GC):
+        //                Mark: 2.5ms, Mark Delayed: 0.1ms, Mark Other: 2.4ms,
+        //                Sweep: 6.2ms, Sweep Object: 0.7ms, Sweep String: 0.0ms,
+        //                Sweep Script: 0.1ms, Sweep Shape: 1.0ms, Discard Code: 0.3ms,
+        //                Discard Analysis: 0.3ms, XPConnect: 0.7ms, Deallocate: 0.0ms
+        //            Totals: Mark: 27.1ms, Mark Roots: 2.8ms, Mark Delayed: 0.2ms,
+        //            Mark Other: 2.4ms, Sweep: 6.2ms, Sweep Object: 0.7ms,
+        //            Sweep String: 0.0ms, Sweep Script: 0.1ms, Sweep Shape: 1.0ms,
+        //            Discard Code: 0.3ms, Discard Analysis: 0.3ms, XPConnect: 0.7ms,
+        //            Deallocate: 0.0ms
+        //
+        // CC(T+18.3) duration: 8ms, suspected: 116, visited: 4079 RCed and 6640 GCed,
+        //            collected: 50 RCed and 0 GCed (50 waiting for GC)
+        //            ForgetSkippable 2 times before CC, min: 0 ms, max: 1 ms,
+        //            avg: 1 ms, total: 2 ms, removed: 109
+        "cc" : [
+          { label: "collected", regex: " ([^,\\n]+)" },
+          { label: "duration", regex: " (\\d+)" },
+          { label: "suspected", regex: " (\\d+)" },
+        ],
+        "gc" : [
+          { label: "Max Pause", regex: " ([\\d\\.]+)" },
+          { label: "Total Time", regex: " ([\\d\\.]+)" },
+          { label: "Type", regex: " (\\w+)" },
+          { label: "Reason", regex: "\\s*(\\w+)" },
+        ]
     }
 };
 
