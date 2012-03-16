@@ -1,6 +1,10 @@
-
-0.2 / 2012-03-01 
+0.2.1 / 2012-03-16
 ==================
+
+  * Fix properties in garbage collector message for Firefox 14. (#93)
+
+0.2 / 2012-03-01
+================
 
   * Update Add-on SDK to v1.5 (#80)
   * Combine full and incremental GC in a single label (#66)
