@@ -7,8 +7,7 @@ var bindEvents = function () {
   let tooltipElements = [].slice.call(document.querySelectorAll("[data-tooltip]"));
 
   logger.onclick = function () {
-    logger.className = (logger.className === "enabled") ? "disabled" : "enabled";
-    self.port.emit("logging_changed");
+    self.port.emit("logger_click");
     self.port.emit("update_tooltip", this.dataset.tooltip);
   };
 
@@ -26,6 +25,12 @@ var hideSplashText = function () {
   // Prevents execution of above DOM calls
   hideSplashText = function () { return; }
 };
+
+self.port.on("logger_update", function (data) {
+  let logger = document.getElementById("logger");
+
+  logger.className = (data["active"]) ? "enabled" : "disabled";
+});
 
 self.port.on("update_garbage_collector", function (data) {
   hideSplashText();
