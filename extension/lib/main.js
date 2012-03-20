@@ -15,7 +15,6 @@ var config = require("config");
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
-var browser_window = require("window-utils").windowIterator().next();
 
 
 var gData = {
@@ -102,17 +101,14 @@ exports.main = function (options, callbacks) {
   });
 
   widget.port.on("update_tooltip", function (data) {
-    switch(data) {
-      case "logger":
-        if (logger.active) {
-          widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
-        } else {
-          widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
-        }
-        break;
-      default:
-        widget.tooltip = "MemChaser";
+    if (data === 'logger' && logger.active) {
+      data = 'logger_enabled';
     }
+    else if (data === 'logger') {
+      data = 'logger_disabled';
+    }
+
+    widget.tooltip = config.extensions.wiget_tooltips[data];
   });
 };
 
