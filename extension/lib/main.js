@@ -92,23 +92,25 @@ exports.main = function (options, callbacks) {
   });
 
   // If logger is clicked, then the state must be changed
-  widget.port.on("logging_changed", function () {
+  widget.port.on("logger_click", function () {
     if (logger.active) {
       logger.stop();
     } else {
       logger.start();
     }
+
+    widget.port.emit("logger_update", { "active": logger.active });
   });
 
   widget.port.on("update_tooltip", function (data) {
-    if (data === 'logger' && logger.active) {
-      data = 'logger_enabled';
+    if (data === "logger" && logger.active) {
+      data = "logger_enabled";
     }
-    else if (data === 'logger') {
-      data = 'logger_disabled';
+    else if (data === "logger") {
+      data = "logger_disabled";
     }
 
-    widget.tooltip = config.extensions.wiget_tooltips[data];
+    widget.tooltip = config.extension.widget_tooltips[data];
   });
 };
 
