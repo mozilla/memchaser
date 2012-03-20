@@ -1,9 +1,47 @@
 <?xml version="1.0"?>
 
-<project name="memchaser" default="package">
+<project name="memchaser" default="dev">
+  <property name="xpi.dir" value="./xpi"/>
+
   <tstamp>
     <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
+
+  <target name="release" depends="version"
+          description="Builds a release version">
+    <property name="xpi.filename" value="${ant.project.name}-${build.version}.xpi"/>
+    <antcall target="package"/>
+  </target>
+
+  <target name="dev" depends="version"
+          description="Builds a development version">
+    <antcall target="package"/>
+  </target>
+
+  <target name="package" depends="clean, version">
+    <property name="xpi.filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
+    <mkdir dir="${xpi.dir}"/>
+    <move file="${build.filename}" tofile="${xpi.dir}/${xpi.filename}"/>
+    <echo>package.filename: ${xpi.dir}/${xpi.filename}</echo>
+  </target>
+
+  <target name="clean"
+          description="Clean-up XPI directory">
+    <delete dir="${xpi.dir}"/>
+  </target>
+
+  <target name="version" depends="build" unless="build.version"
+          description="Shows the current version">
+    <!-- we would need to depend on external libraries to read the version number
+    from package.json, so instead we extract the extension to a temporary location
+    and read the version from install.rdf before removing the temporary folder. -->
+    <unzip src="${build.filename}" dest="temp"/>
+    <xmlproperty file="temp/install.rdf" collapseAttributes="true"/>
+    <property name="build.version" value="${RDF.Description.em:version}"/>
+    <delete dir="temp"/>
+
+    <echo>build.version: ${build.version}</echo>
+  </target>
 
   <target name="build">
     <property name="build.filename" value="extension/${ant.project.name}.xpi"/>
@@ -12,24 +50,6 @@
       <arg value="xpi"/>
     </exec>
     <echo>build.filename: ${build.filename}</echo>
-  </target>
-
-  <target name="getversion" unless="build.version">
-    <unzip src="${build.filename}" dest="temp"/>
-    <xmlproperty file="temp/install.rdf" collapseAttributes="true"/>
-    <property name="build.version" value="${RDF.Description.em:version}"/>
-    <delete dir="temp"/>
-    <echo>build.version: ${build.version}</echo>
-  </target>
-
-  <target name="package" depends="build, getversion">
-    <condition property="package.filename" value="${ant.project.name}-${build.version}.xpi">
-      <isset property="release"/>
-    </condition>
-    <property name="package.filename" value="${ant.project.name}-${build.version}-${build.number}.xpi"/>
-    <delete file="${package.filename}"/>
-    <move file="${build.filename}" tofile="${package.filename}"/>
-    <echo>package.filename: ${package.filename}</echo>
   </target>
 
 </project>
