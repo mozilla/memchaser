@@ -58,13 +58,11 @@ const reporter = EventEmitter.compose({
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (this._isEnabled) {
-      if (config.APP_BRANCH < 14) {
-        Services.console.unregisterListener(this);
-      } else {
-        Services.obs.removeObserver(this, "garbage-collection-statistics");
-        Services.obs.removeObserver(this, "cycle-collection-statistics");
-      }
+    if (config.APP_BRANCH < 14) {
+      Services.console.unregisterListener(this);
+    } else {
+      Services.obs.removeObserver(this, "garbage-collection-statistics");
+      Services.obs.removeObserver(this, "cycle-collection-statistics");
     }
   },
 
@@ -78,9 +76,9 @@ const reporter = EventEmitter.compose({
     this._isEnabled = true;
   },
 
-  observe: function(subject, topic, json) {
+  observe: function(aSubject, aTopic, aData) {
     if (config.APP_BRANCH < 14) {
-      var msg = subject.message;
+      var msg = aSubject.message;
 
       var sections = /^(CC|GC)/i.exec(msg);
       if (sections === null)
@@ -95,12 +93,25 @@ const reporter = EventEmitter.compose({
       return;
     }
 
-    var data = JSON.parse(json);
+    var data = JSON.parse(aData);
     var output = {};
-    if (topic == "garbage-collection-statistics")
-      output.gc = { timestamp: new Date(), duration: ''+data['max_pause'] };
-    else
-      output.cc = { timestamp: new Date(), duration: ''+data['duration'] };
+    if (aTopic == "garbage-collection-statistics") {
+      output.gc = {
+        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
+        'nonincremental_reason': data.nonincremental_reason,
+        'Max Pause' : data.max_pause,
+        'Total Time' : data.total_time,
+        'Type' : data.type,
+        'Reason' : data.Slices[0].reason
+      };
+    } else {
+      output.cc = {
+        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
+        'collected' : data.collected.RCed + data.collected.GCed,
+        'duration' : data.duration,
+        'suspected' : data.suspected
+      };
+    }
     this._emit('data', output);
   },
 
