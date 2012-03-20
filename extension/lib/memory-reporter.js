@@ -12,8 +12,7 @@ const self = require("self");
 const timer = require("api-utils/timer");
 const unload = require("api-utils/unload");
 
-const POLL_INTERVAL_PREF = "extensions." + self.id + ".memory.interval";
-const POLL_INTERVAL_DEFAULT = 5000;
+const config = require("config");
 
 
 var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
@@ -29,7 +28,8 @@ const reporter = EventEmitter.compose({
     unload.ensure(this, 'unload');
 
     // TODO: Reading the pref should be moved out of this module
-    this.interval = prefs.get(POLL_INTERVAL_PREF, POLL_INTERVAL_DEFAULT);
+    this.interval = prefs.get(config.preferences.memory_poll_interval,
+                              config.extension.memory_poll_interval_default);
     this._timer = timer.setInterval(this.onTimer, this.interval, this);
   },
 

@@ -10,13 +10,11 @@ var events = require("events");
 var prefs = require("api-utils/preferences-service");
 var self = require("self");
 var widgets = require("widget");
-const config = require("config");
 
+var config = require("config");
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
-
-const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 var gData = {
@@ -110,7 +108,7 @@ exports.main = function (options, callbacks) {
       data = 'logger_disabled';
     }
 
-    widget.tooltip = config.TOOLTIP_DICT[data];
+    widget.tooltip = config.extensions.wiget_tooltips[data];
   });
 };
 
@@ -118,10 +116,10 @@ exports.onUnload = function (reason) {
 
   // Reset any modified preferences
   if (reason === "disable" || reason === "uninstall") {
-    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
+    var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs, "{}"));
     for (var pref in modifiedPrefs) {
       prefs.set(pref, modifiedPrefs[pref]);
     }
-    prefs.reset(MODIFIED_PREFS_PREF);
+    prefs.reset(config.preferences.modified_prefs);
   }
 };

@@ -1,8 +1,10 @@
-var { Cc, Ci } = require("chrome");
-var { Logger } = require("memchaser/logger")
+Components.utils.import('resource://gre/modules/Services.jsm');
 
-var dir = Cc["@mozilla.org/file/directory_service;1"]
-          .getService(Ci.nsIProperties).get("TmpD", Ci.nsIFile);
+
+const { Cc, Ci } = require("chrome");
+const { Logger } = require("memchaser/logger")
+
+const dir = Services.dirsvc.get("TmpD", Ci.nsIFile);
 
 
 exports.test_default_to_not_logging = function (test) {
