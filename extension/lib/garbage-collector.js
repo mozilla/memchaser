@@ -96,7 +96,7 @@ const reporter = EventEmitter.compose({
 
     var data = JSON.parse(aData);
     var output = {};
-    if (aTopic == "garbage-collection-statistics") {
+    if (aTopic === "garbage-collection-statistics") {
       output.gc = {
         'timestamp' : new Date(Math.round(data.timestamp / 1000)),
         'nonincremental_reason': data.nonincremental_reason,

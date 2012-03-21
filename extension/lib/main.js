@@ -57,7 +57,7 @@ exports.main = function (options, callbacks) {
 
     function isIncremental(entry) {
       if (entry.nonincremental_reason)
-        return entry.nonincremental_reason == 'none';
+        return entry.nonincremental_reason === 'none';
       return (entry["MaxPause"] || entry["Max Pause"]) ? true : false;
     }
 
