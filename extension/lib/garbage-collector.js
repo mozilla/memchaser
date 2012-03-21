@@ -47,22 +47,22 @@ const reporter = EventEmitter.compose({
         this._collector_data = config.GARBAGE_COLLECTOR_DATA["14"];
     }
 
-    if (config.APP_BRANCH < 14) {
-      Services.console.registerListener(this);
-    } else {
+    if (config.APP_BRANCH >= 14) {
       Services.obs.addObserver(this, "garbage-collection-statistics", false);
       Services.obs.addObserver(this, "cycle-collection-statistics", false);
+    } else {
+      Services.console.registerListener(this);
     }
   },
 
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (config.APP_BRANCH < 14) {
-      Services.console.unregisterListener(this);
-    } else {
+    if (config.APP_BRANCH >= 14) {
       Services.obs.removeObserver(this, "garbage-collection-statistics");
       Services.obs.removeObserver(this, "cycle-collection-statistics");
+    } else {
+      Services.console.unregisterListener(this);
     }
   },
 
@@ -76,7 +76,7 @@ const reporter = EventEmitter.compose({
     this._isEnabled = true;
   },
 
-  observe: function(aSubject, aTopic, aData) {
+  observe: function Reporter_observe(aSubject, aTopic, aData) {
     if (config.APP_BRANCH < 14) {
       var msg = aSubject.message;
 
