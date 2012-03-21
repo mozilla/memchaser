@@ -13,9 +13,6 @@ const config = require("config");
 
 Components.utils.import('resource://gre/modules/Services.jsm');
 
-const PREF_MEM_LOGGER = "javascript.options.mem.log";
-const PREF_MODIFIED_PREFS = "extensions." + require("self").id + ".modifiedPrefs";
-
 
 const reporter = EventEmitter.compose({
   constructor: function Reporter() {
@@ -27,24 +24,24 @@ const reporter = EventEmitter.compose({
 
     // For now the logger preference has to be enabled to be able to
     // parse the GC / CC information from the console service messages
-    this._isEnabled = prefs.get(PREF_MEM_LOGGER);
+    this._isEnabled = prefs.get(config.preferences.memory_log);
     if (!this._isEnabled)
       this._enable();
 
     // When we have to parse console messages find the right data
-    switch (config.APP_BRANCH) {
+    switch (config.application.branch) {
       case 10:
-        this._collector_data = config.GARBAGE_COLLECTOR_DATA["10"];
+        this._collector_data = config.extension.gc_app_data["10"];
         break;
       case 11:
       case 12:
-        this._collector_data = config.GARBAGE_COLLECTOR_DATA["11"];
+        this._collector_data = config.extension.gc_app_data["11"];
         break;
       case 13:
-        this._collector_data = config.GARBAGE_COLLECTOR_DATA["13"];
+        this._collector_data = config.extension.gc_app_data["13"];
         break;
       default:
-        this._collector_data = config.GARBAGE_COLLECTOR_DATA["14"];
+        this._collector_data = config.extension.gc_app_data["14"];
     }
 
     if (config.APP_BRANCH >= 14) {
@@ -67,12 +64,16 @@ const reporter = EventEmitter.compose({
   },
 
   _enable: function() {
-    var modifiedPrefs = JSON.parse(prefs.get(PREF_MODIFIED_PREFS, "{}"));
-    if (!modifiedPrefs.hasOwnProperty(PREF_MEM_LOGGER)) {
-      modifiedPrefs[PREF_MEM_LOGGER] = prefs.get(PREF_MEM_LOGGER);
+    let logging_pref= config.preferences.memory_log;
+
+    var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
+                                             "{}"));
+    if (!modifiedPrefs.hasOwnProperty(logging_pref)) {
+      modifiedPrefs[logging_pref] = prefs.get(logging_pref);
     }
-    prefs.set(PREF_MEM_LOGGER, true);
-    prefs.set(PREF_MODIFIED_PREFS, JSON.stringify(modifiedPrefs));
+
+    prefs.set(logging_pref, true);
+    prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
 

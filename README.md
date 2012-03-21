@@ -38,9 +38,9 @@ You can override the build number used in the filename:
 
     ant -Dbuild.number=1
 
-To build for release (no build version in filename):
+To build for release (no build number in filename):
 
-    ant -Drelease=true
+    ant release
 
 You can also build directly using `cfx`:
 
