@@ -2,68 +2,85 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { Cc, Ci } = require("chrome");
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
+const { Cc, Ci } = require("chrome");
 
-function Logger(aDir) {
-  this._dir = aDir;
+const PERMS_DIRECTORY = parseInt("0777", 8);
+const PERMS_FILE = parseInt("0666", 8);
 
-  this.active = false;
-  this.file = null;
+function Logger(aOptions) {
+  aOptions = aOptions || {};
+  this._dir = aOptions.dir;
+  this._foStream = null;
+  this._file = null;
+  this._active = false;
+
+  // Converter to create input streams out of strings
+  this._converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"]
+                    .createInstance(Ci.nsIScriptableUnicodeConverter);
+  this._converter.charset = "UTF-8";
 }
 
 Logger.prototype = {
-
-
-  prepareFile: function Logger_prepareFile() {
-    if (!this._dir.exists())
-      this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, 0777);
-    else if (!this._dir.isDirectory())
-      throw Error(this._dir.path + " is not a directory.");
-
-    var file = this._dir.clone();
-    file.append(new Date().getTime() + ".log");
-
-    var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                   .createInstance(Ci.nsIFileOutputStream);
-    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
-    this.file = file;
+  get file() {
+    return this._file;
   },
 
-  start: function Logger_start() {
-    if (!this.active) {
-      this.prepareFile();
-      this.active = true;
-      console.debug("Logging to '" + this.file.path + "' started.");
-    }
-  },
-
-  stop: function Logger_stop() {
-    if (this.active) {
-      this.active = false;
-      console.debug("Logging to '" + this.file.path + "' stopped.");
-    }
-  },
-
-  log: function Logger_log(data) {
-    if (this.active) {
-      var foStream = Cc["@mozilla.org/network/file-output-stream;1"].
-                     createInstance(Ci.nsIFileOutputStream);
-
-      foStream.init(this.file, 0x02 | 0x08 | 0x10, 0666, 0);
-
-      data.timestamp = new Date().getTime();
-      var message = JSON.stringify(data);
-      console.debug("Logging: '" + message + "'");
-
-      var converter = Cc["@mozilla.org/intl/converter-output-stream;1"].
-                      createInstance(Ci.nsIConverterOutputStream);
-
-      converter.init(foStream, "UTF-8", 0, 0);
-      converter.writeString(message + '\r\n');
-      converter.close();
-    }
+  get active() {
+    return this._active;
   }
-}
+};
+
+Logger.prototype.prepareFile = function Logger_prepareFile() {
+  if (!this._dir.exists())
+    this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
+  else if (!this._dir.isDirectory())
+    throw Error(this._dir.path + " is not a directory.");
+
+  var file = this._dir.clone();
+  file.append(Date.now() + ".log");
+
+  this._file = file;
+};
+
+Logger.prototype.start = function Logger_start() {
+  if (!this.active) {
+    this.prepareFile();
+    this._active = true;
+  }
+};
+
+Logger.prototype.stop = function Logger_stop() {
+  if (this.active) {
+    this._active = false;
+  }
+};
+
+Logger.prototype.log = function Logger_log(aData, aCallback) {
+  if (this.active) {
+    aData.timestamp = Date.now();
+    var message = JSON.stringify(aData);
+
+    // Create a output stream to write to file
+    var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                  .createInstance(Ci.nsIFileOutputStream);
+    foStream.init(this._file, 0x02 | 0x08 | 0x10, PERMS_FILE, foStream.DEFER_OPEN);
+    var iStream = this._converter.convertToInputStream(message + '\r\n');
+
+    // Write asynchronously to buffer;
+    // Input and output streams are closed after write
+    NetUtil.asyncCopy(iStream, foStream, function (status) {
+      if (!Components.isSuccessCode(status)) {
+        var errorMessage = new Error("Error while writing to file: " + status);
+        console.error(errorMessage);
+      }
+
+      if (aCallback && typeof(aCallback) === "function") {
+        aCallback(status);
+      }
+    });
+  }
+};
 
 exports.Logger = Logger;
