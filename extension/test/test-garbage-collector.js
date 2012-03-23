@@ -1,9 +1,10 @@
 const prefs = require("api-utils/preferences-service");
-const garbage_collector = require("memchaser/garbage-collector")
 
-const MEM_LOGGER_PREF = "javascript.options.mem.log";
-
+const config = require('memchaser/config');
 
 exports.test_javascript_mem_log_enabled = function (test) {
-  test.assert(prefs.get(MEM_LOGGER_PREF));
+  // We have to require the garbage collector to initialize the module
+  require("memchaser/garbage-collector");
+
+  test.assert(prefs.get(config.preferences.memory_log));
 }

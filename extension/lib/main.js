@@ -11,12 +11,10 @@ var prefs = require("api-utils/preferences-service");
 var self = require("self");
 var widgets = require("widget");
 
+var config = require("config");
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
 var memory_reporter = require("memory-reporter");
-var browser_window = require("window-utils").windowIterator().next();
-
-const MODIFIED_PREFS_PREF = "extensions." + self.id + ".modifiedPrefs";
 
 
 var gData = {
@@ -37,7 +35,7 @@ exports.main = function (options, callbacks) {
   var dir = Cc["@mozilla.org/file/directory_service;1"]
             .getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
   dir.append(self.name);
-  var logger = new Logger(dir);
+  var logger = new Logger({ dir: dir });
 
   var widget = widgets.Widget({
     id: "memchaser-widget",
@@ -52,7 +50,15 @@ exports.main = function (options, callbacks) {
   // If new data from garbage collector is available update global data
   garbage_collector.on("data", function (data) {
     function getDuration(entry) {
-      return entry.duration || entry.MaxPause || entry.Total || entry.TotalTime;
+      return entry.duration ||
+             (entry.MaxPause || entry['Max Pause']) ||
+             (entry.Total || entry.TotalTime || entry['Total Time']);
+    }
+
+    function isIncremental(entry) {
+      if (entry.nonincremental_reason)
+        return entry.nonincremental_reason === 'none';
+      return (entry["MaxPause"] || entry["Max Pause"]) ? true : false;
     }
 
     for (var entry in data) {
@@ -64,6 +70,9 @@ exports.main = function (options, callbacks) {
 
       var duration = getDuration(data[entry]);
       data[entry].duration = duration;
+      if (entry === "gc") {
+        data[entry].isIncremental = isIncremental(data[entry]);
+      }
 
       if (entry in gData.previous.garbage_collector) {
         var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
@@ -85,26 +94,25 @@ exports.main = function (options, callbacks) {
   });
 
   // If logger is clicked, then the state must be changed
-  widget.port.on("logging_changed", function () {
+  widget.port.on("logger_click", function () {
     if (logger.active) {
       logger.stop();
     } else {
       logger.start();
     }
+
+    widget.port.emit("logger_update", { "active": logger.active });
   });
 
   widget.port.on("update_tooltip", function (data) {
-    switch(data) {
-      case "logger":
-        if (logger.active) {
-          widget.tooltip = "MemChaser logging is currently enabled. Click to disable.";
-        } else {
-          widget.tooltip = "MemChaser logging is currently disabled. Click to enable.";
-        }
-        break;
-      default:
-        widget.tooltip = "MemChaser";
+    if (data === "logger" && logger.active) {
+      data = "logger_enabled";
     }
+    else if (data === "logger") {
+      data = "logger_disabled";
+    }
+
+    widget.tooltip = config.extension.widget_tooltips[data];
   });
 };
 
@@ -112,10 +120,10 @@ exports.onUnload = function (reason) {
 
   // Reset any modified preferences
   if (reason === "disable" || reason === "uninstall") {
-    var modifiedPrefs = JSON.parse(prefs.get(MODIFIED_PREFS_PREF, "{}"));
+    var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs, "{}"));
     for (var pref in modifiedPrefs) {
       prefs.set(pref, modifiedPrefs[pref]);
     }
-    prefs.reset(MODIFIED_PREFS_PREF);
+    prefs.reset(config.preferences.modified_prefs);
   }
 };
