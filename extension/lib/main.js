@@ -18,14 +18,8 @@ var memory_reporter = require("memory-reporter");
 
 
 var gData = {
-  current: {
-    memory: { },
-    garbage_collector: { }
-  },
-  previous: {
-    memory: { },
-    garbage_collector: { }
-  }
+  current: {},
+  previous: {}
 };
 
 
@@ -47,52 +41,6 @@ exports.main = function (options, callbacks) {
     width: 360
   });
 
-  // If new data from garbage collector is available update global data
-  garbage_collector.on("data", function (data) {
-    function getDuration(entry) {
-      return entry.duration ||
-             (entry.MaxPause || entry['Max Pause']) ||
-             (entry.Total || entry.TotalTime || entry['Total Time']);
-    }
-
-    function isIncremental(entry) {
-      if (entry.nonincremental_reason)
-        return entry.nonincremental_reason === 'none';
-      return (entry["MaxPause"] || entry["Max Pause"]) ? true : false;
-    }
-
-    for (var entry in data) {
-      // Backup previous entry if one exists
-      if (entry in gData.current.garbage_collector) {
-        gData.previous.garbage_collector[entry] = gData.current.garbage_collector[entry];
-      }
-      gData.current.garbage_collector[entry] = data[entry];
-
-      var duration = getDuration(data[entry]);
-      data[entry].duration = duration;
-      if (entry === "gc") {
-        data[entry].isIncremental = isIncremental(data[entry]);
-      }
-
-      if (entry in gData.previous.garbage_collector) {
-        var currentTime = gData.current.garbage_collector[entry].timestamp.getTime();
-        var previousTime = gData.previous.garbage_collector[entry].timestamp.getTime();
-        var age = (currentTime - previousTime) - duration;
-        data[entry].age = (age * 0.001).toFixed(1);
-      }
-    };
-
-    widget.port.emit("update_garbage_collector", data);
-    logger.log(gData.current);
-  });
-
-  // If new data for memory usage is available update global data
-  memory_reporter.on("data", function (data) {
-    gData.current.memory = data;
-    widget.port.emit("update_memory", data);
-    logger.log(gData.current);
-  });
-
   // If logger is clicked, then the state must be changed
   widget.port.on("logger_click", function () {
     if (logger.active) {
@@ -104,6 +52,7 @@ exports.main = function (options, callbacks) {
     widget.port.emit("logger_update", { "active": logger.active });
   });
 
+  // If user hovers over an entry the tooltip has to be updated
   widget.port.on("update_tooltip", function (data) {
     if (data === "logger" && logger.active) {
       data = "logger_enabled";
@@ -114,7 +63,35 @@ exports.main = function (options, callbacks) {
 
     widget.tooltip = config.extension.widget_tooltips[data];
   });
-};
+
+  memory_reporter.on(config.application.topic_memory_statistics, function (aData) {
+    if (gData.current.memory)
+      gData.previous.memory = gData.current.memory;
+    gData.current.memory = aData;
+
+    widget.port.emit('update_memory', aData);
+    logger.log(config.application.topic_memory_statistics, aData);
+  });
+
+  garbage_collector.on(config.application.topic_gc_statistics, function (aData) {
+    if (gData.current.gc)
+      gData.previous.gc = gData.current.gc;
+    gData.current.gc = aData;
+
+    widget.port.emit('update_garbage_collector', gData);
+    logger.log(config.application.topic_gc_statistics, aData);
+  });
+
+  garbage_collector.on(config.application.topic_cc_statistics, function (aData) {
+    if (gData.current.cc)
+      gData.previous.cc = gData.current.cc;
+    gData.current.cc = aData;
+
+    widget.port.emit('update_cycle_collector', gData);
+    logger.log(config.application.topic_cc_statistics, aData);
+  });
+}
+
 
 exports.onUnload = function (reason) {
 
@@ -126,4 +103,4 @@ exports.onUnload = function (reason) {
     }
     prefs.reset(config.preferences.modified_prefs);
   }
-};
+}

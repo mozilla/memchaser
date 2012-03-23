@@ -49,9 +49,9 @@ exports.test_log_and_callback = function (test) {
   }
 
   logger.start();
-  logger.log({ GC: 50 });
-  logger.log({ GC: 60 });
-  logger.log({ GC: 70 }, verifyOutput);
+  logger.log('test', { GC: 50 });
+  logger.log('test', { GC: 60 });
+  logger.log('test', { GC: 70 }, verifyOutput);
 
   test.waitUntilDone(2000);
 }

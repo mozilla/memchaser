@@ -4,14 +4,15 @@
 
 "use strict";
 
+Components.utils.import('resource://gre/modules/Services.jsm');
+
+
 const {Cc, Ci} = require("chrome");
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const unload = require("api-utils/unload");
 
 const config = require("config");
-
-Components.utils.import('resource://gre/modules/Services.jsm');
 
 
 const reporter = EventEmitter.compose({
@@ -37,17 +38,15 @@ const reporter = EventEmitter.compose({
       case 12:
         this._collector_data = config.extension.gc_app_data["11"];
         break;
-      case 13:
-        this._collector_data = config.extension.gc_app_data["13"];
-        break;
       default:
-        this._collector_data = config.extension.gc_app_data["14"];
+        this._collector_data = config.extension.gc_app_data["13"];
     }
 
-    if (config.APP_BRANCH >= 14) {
-      Services.obs.addObserver(this, "garbage-collection-statistics", false);
-      Services.obs.addObserver(this, "cycle-collection-statistics", false);
-    } else {
+    if (config.application.branch >= 14) {
+      Services.obs.addObserver(this, config.application.topic_cc_statistics, false);
+      Services.obs.addObserver(this, config.application.topic_gc_statistics, false);
+    }
+    else {
       Services.console.registerListener(this);
     }
   },
@@ -55,9 +54,9 @@ const reporter = EventEmitter.compose({
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (config.APP_BRANCH >= 14) {
-      Services.obs.removeObserver(this, "garbage-collection-statistics");
-      Services.obs.removeObserver(this, "cycle-collection-statistics");
+    if (config.application.branch >= 14) {
+      Services.obs.removeObserver(this, config.application.topic_cc_statistics, false);
+      Services.obs.removeObserver(this, config.application.topic_gc_statistics, false);
     } else {
       Services.console.unregisterListener(this);
     }
@@ -77,43 +76,36 @@ const reporter = EventEmitter.compose({
     this._isEnabled = true;
   },
 
+  /**
+   * Callback for GC/CC related observer notifications
+   */
   observe: function Reporter_observe(aSubject, aTopic, aData) {
-    if (config.APP_BRANCH < 14) {
-      var msg = aSubject.message;
+    let data = { };
+    let type = aTopic;
 
-      var sections = /^(CC|GC)/i.exec(msg);
+    if (config.application.branch >= 14) {
+      data = JSON.parse(aData);
+
+      // Use milliseconds instead of microseconds for the timestamp
+      if ('timestamp' in data) {
+        data['timestamp'] = Math.round(data['timestamp'] / 1000);
+      }
+    }
+    else {
+      // If it's not a GC/CC message return immediately
+      var sections = /^(CC|GC)/i.exec(aSubject.message);
       if (sections === null)
         return;
 
-      var data = this.parseConsoleMessage(sections[1].toLowerCase(), msg);
-
-      let self = this;
-      require("timer").setTimeout(function () {
-        self._emit("data", data);
-      });
-      return;
+      type = (sections[1].toLowerCase() === "cc") ? config.application.topic_cc_statistics
+                                                  : config.application.topic_gc_statistics;
+      data = this.parseConsoleMessage(sections[1].toLowerCase(), aSubject.message);
     }
 
-    var data = JSON.parse(aData);
-    var output = {};
-    if (aTopic === "garbage-collection-statistics") {
-      output.gc = {
-        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
-        'nonincremental_reason': data.nonincremental_reason,
-        'Max Pause' : data.max_pause,
-        'Total Time' : data.total_time,
-        'Type' : data.type,
-        'Reason' : data.Slices[0].reason
-      };
-    } else {
-      output.cc = {
-        'timestamp' : new Date(Math.round(data.timestamp / 1000)),
-        'collected' : data.collected.RCed + data.collected.GCed,
-        'duration' : data.duration,
-        'suspected' : data.suspected
-      };
-    }
-    this._emit('data', output);
+    // Once the console listener can be removed, we can emit directly
+    require("timer").setTimeout(function (aScope) {
+      aScope._emit(type, data);
+    }, 0, this);
   },
 
   /**
@@ -130,13 +122,12 @@ const reporter = EventEmitter.compose({
       return matches ? matches[1] : undefined;
     }
 
-    var data = { };
-    data[aType] = {
-      timestamp : new Date()
+    let data = {
+      timestamp: Date.now()
     };
 
     this._collector_data[aType].forEach(function (aEntry) {
-      data[aType][aEntry.label] = getValueFor(aEntry.label, aEntry.regex)
+      data[aEntry.label] = getValueFor(aEntry.label, aEntry.regex)
     });
 
     return data;

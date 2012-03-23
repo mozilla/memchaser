@@ -38,13 +38,14 @@ const reporter = EventEmitter.compose({
     timer.clearInterval(this._timer);
   },
 
-  onTimer: function Reporter_onTimer(scope) {
+  onTimer: function Reporter_onTimer(aScope) {
     var data = {
+      timestamp:  Date.now(),
       //explicit: memSrv.explicit,
       resident: memSrv.resident
     }
 
-    scope._emit('data', data);
+    aScope._emit(config.application.topic_memory_statistics, data);
   }
 })();
 

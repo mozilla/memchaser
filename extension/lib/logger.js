@@ -57,10 +57,12 @@ Logger.prototype.stop = function Logger_stop() {
   }
 };
 
-Logger.prototype.log = function Logger_log(aData, aCallback) {
+Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
   if (this.active) {
-    aData.timestamp = Date.now();
-    var message = JSON.stringify(aData);
+    var message = JSON.stringify({type: aType, data: aData});
+
+    // For testing purposes send the message to stdout
+    //dump(message + '\n');
 
     // Create a output stream to write to file
     var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
