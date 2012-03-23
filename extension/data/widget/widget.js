@@ -18,6 +18,26 @@ var bindEvents = function () {
   });
 };
 
+/**
+ * Get the duration of the given GC or CC entry
+ */
+var getDuration = function (aEntry) {
+  let keys = ['duration',
+              'MaxPause', 'max_pause',
+              'Total', 'TotalTime', 'total_time'];
+
+  for each (let key in keys) {
+    if (key in aEntry) {
+      return aEntry[key];
+    }
+  };
+
+  return undefined;
+}
+
+/**
+ * Hide the initialization element and show real values
+ */
 var hideSplashText = function () {
   document.getElementById("init").style.display = "none";
   document.getElementById("data").style.display = "inline";
@@ -26,43 +46,74 @@ var hideSplashText = function () {
   hideSplashText = function () { return; }
 };
 
+/**
+ * Check if the GC entry is an incremental GC
+ */
+var isIncrementalGC = function (aEntry) {
+  let keys = ['MaxPause', 'max_pause'];
+
+  if ('nonincremental_reason' in aEntry)
+    return aEntry['nonincremental_reason'] === 'none';
+
+  for each (let key in keys) {
+    if (key in aEntry) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 self.port.on("logger_update", function (data) {
   let logger = document.getElementById("logger");
 
   logger.className = (data["active"]) ? "enabled" : "disabled";
 });
 
-self.port.on("update_garbage_collector", function (data) {
+/**
+ * Update the values of the specified collector
+ */
+var updateCollector = function (aType, aData) {
   hideSplashText();
 
-  // Update widget with current garbage collector activity
-  ["gc", "cc"].forEach(function (aType) {
-    // Keep old values displayed
-    if (!data[aType]) {
-      return;
-    }
+  let duration = getDuration(aData['current'][aType]);
+  let age;
 
-    // Check for an incremental GC
-    if (aType === "gc") {
-      var label = document.querySelector("#gc .label");
-      label.textContent = (data[aType].isIncremental ? "iGC: " : "GC: ");
-    }
+  if (aData['previous'][aType]) {
+    let currentTime = aData['current'][aType]['timestamp'];
+    let previousTime = aData['previous'][aType]['timestamp'];
+    age = (currentTime - previousTime - duration) * 0.001;
+  }
 
-    var duration = document.querySelector("#" + aType + " .duration");
-    duration.textContent = data[aType].duration + "ms";
+  let elem_duration = document.querySelector('#' + aType + ' .duration');
+  elem_duration.textContent = duration + 'ms';
 
-    if (data[aType].duration >= GARBAGE_COLLECTOR_DURATION_WARNING) {
-      duration.className = "duration warning";
-    }
-    else {
-      duration.className = "duration";
-    }
+  if (duration >= GARBAGE_COLLECTOR_DURATION_WARNING) {
+    elem_duration.className = 'duration warning';
+  }
+  else {
+    elem_duration.className = 'duration';
+  }
 
-    if (data[aType].age) {
-      var age = document.querySelector("#" + aType + " .age");
-      age.textContent = " (" + data[aType].age + "s)";
-    }
-  });
+  let elem_age = document.querySelector('#' + aType + ' .age');
+  elem_age.textContent = (age === undefined) ? '' : ' (' + age.toFixed(1) + 's)';
+
+  // Garbage collector specific values
+  if (aType === 'gc') {
+    var elem_label = document.querySelector('#' + aType + ' .label');
+    elem_label.textContent = isIncrementalGC(aData['current'][aType]) ? 'iGC: '
+                                                                      : 'GC: ';
+  }
+
+}
+
+self.port.on('update_cycle_collector', function (aData) {
+  updateCollector('cc', aData);
+});
+
+self.port.on("update_garbage_collector", function (aData) {
+  updateCollector('gc', aData);
 });
 
 self.port.on("update_memory", function (data) {
