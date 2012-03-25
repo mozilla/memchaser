@@ -2,7 +2,7 @@ const BYTE_TO_MEGABYTE = 1/1048576;
 
 const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
 
-var bindEvents = function () {
+var setup = function () {
   let logger = document.getElementById("logger");
   let tooltipElements = [].slice.call(document.querySelectorAll("[data-tooltip]"));
 
@@ -16,6 +16,12 @@ var bindEvents = function () {
       self.port.emit("update_tooltip", this.dataset.tooltip);
     };
   });
+
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=660857
+  // TODO: Remove this when bug 660857 is fixed; otherwise
+  // we have to resort to the following workaround:
+  document.getElementById("splash").style.display = "none";
+  document.getElementById("init").style.display = "inline";
 };
 
 /**
@@ -38,12 +44,13 @@ var getDuration = function (aEntry) {
 /**
  * Hide the initialization element and show real values
  */
-var hideSplashText = function () {
+var hideInitText = function () {
   document.getElementById("init").style.display = "none";
   document.getElementById("data").style.display = "inline";
+  document.getElementById("logger").style.display = "inline-block";
 
   // Prevents execution of above DOM calls
-  hideSplashText = function () { return; }
+  hideInitText = function () { return; }
 };
 
 /**
@@ -75,7 +82,7 @@ self.port.on("logger_update", function (data) {
  * Update the values of the specified collector
  */
 var updateCollector = function (aType, aData) {
-  hideSplashText();
+  hideInitText();
 
   let duration = getDuration(aData['current'][aType]);
   let age;
@@ -117,7 +124,7 @@ self.port.on("update_garbage_collector", function (aData) {
 });
 
 self.port.on("update_memory", function (data) {
-  hideSplashText();
+  hideInitText();
 
   // Update widget with current memory usage
   ["resident"].forEach(function (aType) {
@@ -128,4 +135,4 @@ self.port.on("update_memory", function (data) {
   });
 });
 
-bindEvents();
+setup();

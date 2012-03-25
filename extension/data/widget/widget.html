@@ -2,7 +2,7 @@
 <html>
 <head>
   <style type="text/css">
-    html {
+    body {
       margin-top: 1px;
       font-family: "Lucida Grande", "Segoe UI", Arial, sans-serif;
       font-size: 11px;
@@ -10,12 +10,9 @@
       text-align: right;
     }
 
-    p {
-      display: inline;
-    }
-
-    #data {
-      display: none;
+    #splash {
+      margin-left: 13px;
+      float: left;
     }
 
     #logger {
@@ -23,8 +20,11 @@
       width: 12px;
       height: 12px;
       border-radius: 6px;
-      display: inline-block;
       vertical-align: top;
+    }
+
+    #data, #init, #logger {
+      display: none;
     }
 
     .warning {
@@ -41,6 +41,7 @@
   </style>
 </head>
 <body>
+  <span id="splash">MemChaser</span>
   <p id="init">Initializing MemChaser...</p>
   <p id="data">
     <span id="resident">
