@@ -11,24 +11,19 @@ Continuous Integration
 How to build
 ------------
 
-Before you can test or build the extension you will have to init the [Add-ons SDK](https://github.com/mozilla/addon-sdk) submodule. After it has been done, activate
-it's environment:
+Before you can test or build the extension you will have to init the [Add-ons SDK](https://github.com/mozilla/addon-sdk) submodule.
 
     git submodule update --init
-    cd addon-sdk
-    source bin/activate
-    cd ..
 
 To run tests against the extension:
 
-    cd extension
-    cfx test
-
+    ant test
 
 To manually test the extension:
 
-    cd extension
-    cfx run
+    ant run
+
+To specify the Firefox binary include `-Dbinary=path/to/firefox` on the command line.
 
 To build simply run `ant` and the default build script/target will be invoked:
 
@@ -42,7 +37,9 @@ To build for release (no build number in filename):
 
     ant release
 
-You can also build directly using `cfx`:
+You can also use the Add-ons SDK directly using `cfx`:
 
-    cd extension
-    cfx xpi
+    cd addon-sdk
+    source bin/activate
+    cd ../extension
+    cfx docs
