@@ -258,4 +258,10 @@ exports.test_normalize_and_slice = function (test) {
                    "Returned array should have a length of 2");
   test.assertEqual(array[0].test, buffer.read(-2).test);
   test.assertEqual(array[1].test, buffer.read(-1).test);
+
+  array = buffer.slice(3, 7);
+
+  for (var i = 0; i < array.length; i += 1) {
+    test.assertEqual(array[i].test, buffer.read(i + 3).test);
+  }
 }

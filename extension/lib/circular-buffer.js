@@ -56,7 +56,8 @@ var buffer = EventEmitter.compose({
 
   /**
    * Normalize the circular buffer as a FIFO buffer;
-   * Head points
+   * The buffer is reorganized such that the head is pointing
+   * to the 0th element and the back to the number of elements
    */
   _normalize: function CircularBuffer_normalize() {
     var temp = this.length;
@@ -207,7 +208,12 @@ var buffer = EventEmitter.compose({
     return data;
   },
   
-  slice: function CircularBuffer_slice() {
+  /**
+   * Returns a copy of a portion of the buffer
+   * The usage follows exactly that of Array.prototype.slice
+   * NOTE: The objects are copied by reference!
+   */
+  slice: function CircularBuffer_slice(begin, end) {
     this._normalize();
 
     return Array.prototype.slice.apply(this._buffer, arguments);
