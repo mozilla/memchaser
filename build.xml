@@ -7,6 +7,11 @@
     <format property="build.number" pattern="yyyyMMddHHmm"/>
   </tstamp>
 
+  <condition property="cfx.binary" value="-b ${binary}">
+      <isset property="binary"/>
+  </condition>
+  <property name="cfx.binary" value=""/>
+
   <target name="release" depends="version"
           description="Builds a release version">
     <property name="xpi.filename" value="${ant.project.name}-${build.version}.xpi"/>
@@ -46,10 +51,34 @@
   <target name="build">
     <property name="build.filename" value="extension/${ant.project.name}.xpi"/>
     <delete file="${build.filename}"/>
-    <exec executable="cfx" dir="extension">
-      <arg value="xpi"/>
+    <exec executable="/bin/sh" dir="addon-sdk">
+      <arg value="-c"/>
+      <arg value="source bin/activate;cd ../extension;cfx xpi"/>
     </exec>
     <echo>build.filename: ${build.filename}</echo>
+  </target>
+
+  <target name="run">
+    <exec executable="/bin/sh" dir="addon-sdk">
+      <arg value="-c"/>
+      <arg value="source bin/activate;cd ../extension;cfx run ${cfx.binary}"/>
+    </exec>
+  </target>
+
+  <target name="test">
+    <exec executable="/bin/sh"
+          dir="addon-sdk"
+          resultproperty="test.result">
+      <arg value="-c"/>
+      <arg value="source bin/activate;cd ../extension;cfx test ${cfx.binary}"/>
+    </exec>
+    <fail message="Tests failed!">
+      <condition>
+         <not>
+           <equals arg1="${test.result}" arg2="0"/>
+         </not>
+       </condition>
+    </fail>
   </target>
 
 </project>
