@@ -9,6 +9,7 @@ const TestData = [];
 for (var i = 0; i < 10; i += 1) {
   TestData.push({ test: i });
 }
+
 exports.test_state = function (test) {
   var buffer = CircularBuffer({ length: 10 });
   
@@ -239,4 +240,22 @@ exports.test_remove_event = function (test) {
   buffer.push(TestData[0]);
   buffer.pop();
   test.waitUntilDone(2000);
+}
+
+exports.test_normalize_and_slice = function (test) {
+  var buffer = CircularBuffer({ length: 10 });
+  var array = [];
+
+  for (var i = 0; i < 10; i += 1) {
+    buffer.push(TestData[i]);
+  }
+
+  array = buffer.slice(-2);
+
+  test.assertEqual(buffer.length, 10, 
+                   "Buffer's length should be unchanged after normalizing");
+  test.assertEqual(array.length, 2,
+                   "Returned array should have a length of 2");
+  test.assertEqual(array[0].test, buffer.read(-2).test);
+  test.assertEqual(array[1].test, buffer.read(-1).test);
 }

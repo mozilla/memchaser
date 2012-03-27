@@ -14,15 +14,10 @@ var buffer = EventEmitter.compose({
   constructor: function CircularBuffer(aOptions) {
     var options = aOptions || {};
 
-    this._length = options.length || 60;
-    if (this._length < 1) {
-      throw new RangeError('Invalid length');
-    }
-
+    this._buffer = [];
+    this._buffer.length = aOptions.length || 60;
     this._front = 0;
     this._back = 0;
-    this._buffer = [];
-    this._buffer.length = this._length;
     this._count = 0;
     
     // Report unhandled errors from listeners
@@ -32,6 +27,9 @@ var buffer = EventEmitter.compose({
     unload.ensure(this, 'unload');
   },
 
+  /**
+   * Destructor; to be called only once
+   */
   unload: function CircularBuffer_unload() {
     this._removeAllListeners(ON_WRITE);
     this._removeAllListeners(ON_REMOVE);
@@ -41,35 +39,28 @@ var buffer = EventEmitter.compose({
    * Returns the next index, adjusted for cycles
    */
   _nextIndex: function CircularBuffer_nextIndex(aIndex) {
-    return (aIndex + 1) % this._length;
+    return (aIndex + 1) % this.length;
   },
 
   /**
    * Returns the previous index, adjusted for cycles
    */
   _prevIndex: function CircularBuffer_prevIndex(aIndex) {
-    var index = (aIndex - 1) % this._length;
+    var index = (aIndex - 1) % this.length;
 
     if (index < 0) {
-      index += this._length;
+      index += this.length;
     }
     return index;
   },
 
-  get count() {
-    return this._count;
-  },
-  
-  get length() {
-    return this._length;
-  },
+  /**
+   * Normalize the circular buffer as a FIFO buffer;
+   * Head points
+   */
+  _normalize: function CircularBuffer_normalize() {
+    var temp = this.length;
 
-  set length(aNewLength) {
-    if (aNewLength < 0) {
-      throw new RangeError('Invalid length');
-    }
-
-    // Normalize the circular buffer as a FIFO buffer
     if (this._front > this._back) {
       this._buffer.push.apply(this._buffer, 
                               this._buffer.slice(this._front));
@@ -81,16 +72,39 @@ var buffer = EventEmitter.compose({
                               this._buffer.slice(this._front, this._back));
     }
 
-    this._buffer = this._buffer.slice(0, this._length);
+    this._buffer = this._buffer.slice(0, temp);
+    this._front = 0;
+    this._back = this.count;
+  },
+
+  /**
+   * Returns the number of elements currently in the buffer
+   */
+  get count() {
+    return this._count;
+  },
+  
+  /**
+   * Returns the capacity of the array;
+   * The capacity indicates the number of elements are in a full buffer
+   */
+  get length() {
+    return this._buffer.length;
+  },
+
+  set length(aNewLength) {
+    if (aNewLength < 0) {
+      throw new RangeError('Invalid length');
+    }
+
+    this._normalize();
 
     // Truncate the oldest elements if new length is less than original
-    if (aNewLength < this._length) {
-      this._buffer = this._buffer.slice(this._length - aNewLength);
+    if (aNewLength < this.length) {
+      this._buffer = this._buffer.slice(this.length - aNewLength);
     }
 
     this._buffer.length = aNewLength;
-    this._length = aNewLength;
-    this._front = 0;
     this._count = Math.min(this._count, aNewLength);
     this._back = this._nextIndex(this._count - 1);
   },
@@ -104,12 +118,12 @@ var buffer = EventEmitter.compose({
     
     // Adjust the index to imitate python-style indexing 
     if (index >= 0) {
-      index = (this._front + index) % this._length;
+      index = (this._front + index) % this.length;
     }
     else {
-      index = (this._back + index) % this._length;
+      index = (this._back + index) % this.length;
       if (index < 0) {
-        index += this._length;
+        index += this.length;
       }
     }
 
@@ -193,24 +207,38 @@ var buffer = EventEmitter.compose({
     return data;
   },
   
+  slice: function CircularBuffer_slice() {
+    this._normalize();
+
+    return Array.prototype.slice.apply(this._buffer, arguments);
+  },
+
   /**
    * Clears data from the buffer and resets the count
    */
   clear: function CircularBuffer_clear() {
+    var temp = this.length;
+
     this._buffer.length = 0;
-    this._buffer.length = this._length;
+    this._buffer.length = temp;
     this._front = 0;
     this._back = 0;
     this._count = 0;
     this._emit(ON_REMOVE);
   },
 
+  /**
+   * Returns true to indicate that the buffer is empty
+   */
   isEmpty: function CircularBuffer_isEmpty() {
     return (this._count === 0);
   },
   
+  /**
+   * Returns true to indicate that the buffer is full
+   */
   isFull: function CircularBuffer_isFull() {
-    return (this._count === this._length);
+    return (this._count === this.length);
   }
 });
 
