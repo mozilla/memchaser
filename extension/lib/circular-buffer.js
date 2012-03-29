@@ -106,8 +106,8 @@ var buffer = EventEmitter.compose({
     }
 
     this._buffer.length = aNewLength;
-    this._count = Math.min(this._count, aNewLength);
-    this._back = this._nextIndex(this._count - 1);
+    this._count = Math.min(this.count, aNewLength);
+    this._back = this._nextIndex(this.count - 1);
   },
 
   /**
@@ -223,10 +223,7 @@ var buffer = EventEmitter.compose({
    * Clears data from the buffer and resets the count
    */
   clear: function CircularBuffer_clear() {
-    var temp = this.length;
-
-    this._buffer.length = 0;
-    this._buffer.length = temp;
+    this._buffer = new Array(this.length);
     this._front = 0;
     this._back = 0;
     this._count = 0;
@@ -237,14 +234,14 @@ var buffer = EventEmitter.compose({
    * Returns true to indicate that the buffer is empty
    */
   isEmpty: function CircularBuffer_isEmpty() {
-    return (this._count === 0);
+    return (this.count === 0);
   },
   
   /**
    * Returns true to indicate that the buffer is full
    */
   isFull: function CircularBuffer_isFull() {
-    return (this._count === this.length);
+    return (this.count === this.length);
   }
 });
 
