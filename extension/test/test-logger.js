@@ -19,13 +19,17 @@ exports.test_start_stop_logging = function (test) {
 
   logger.stop();
   test.assert(!logger.active);
+
+  logger._file.remove(false);
+  test.assert(!logger._file.exists(), "Clean-up; delete test file");
 }
 
 exports.test_log_and_callback = function (test) {
   var logger = new Logger({ dir: dir });
+  var message = '';
 
   function verifyOutput(status) {
-    var line = {}, lines = [], continueRead;
+    var line = {}, hasMore;
     try {
       // open an input stream from file
       var istream = Cc["@mozilla.org/network/file-input-stream;1"].
@@ -35,23 +39,30 @@ exports.test_log_and_callback = function (test) {
 
       // read lines into array
       do {
-        continueRead = istream.readLine(line);
-        lines.push(line.value);
-      } while (continueRead);
+        hasMore = istream.readLine(line);
+        message += line.value;
+      } while (hasMore);
     }
     finally {
       istream.close();
-      test.assert(lines[0].indexOf(':50') != -1, 'data');
-      test.assert(lines[1].indexOf(':60') != -1, 'data');
-      test.assert(lines[2].indexOf(':70') != -1, 'data');
+      message = JSON.parse(message);
+
+      test.assertEqual(message.length, 3);
+      test.assertEqual(message[0].data.x, 50);
+      test.assertEqual(message[1].data.x, 60);
+      test.assertEqual(message[2].data.x, 70);
+
+      logger._file.remove(false);
+      test.assert(!logger._file.exists(), "Clean-up; delete test file");
       test.done();
     }
   }
 
   logger.start();
-  logger.log('test', { GC: 50 });
-  logger.log('test', { GC: 60 });
-  logger.log('test', { GC: 70 }, verifyOutput);
+  logger.log('test', { x: 50 });
+  logger.log('test', { x: 60 });
+  logger.log('test', { x: 70 }, verifyOutput);
+  logger.stop();
 
   test.waitUntilDone(2000);
 }
