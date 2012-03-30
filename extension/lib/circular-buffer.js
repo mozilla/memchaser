@@ -85,6 +85,10 @@ var buffer = EventEmitter.compose({
     return this._count;
   },
   
+  set count(val) {
+    this._count = val;
+  },
+
   /**
    * Returns the capacity of the array;
    * The capacity indicates the number of elements are in a full buffer
@@ -106,7 +110,7 @@ var buffer = EventEmitter.compose({
     }
 
     this._buffer.length = aNewLength;
-    this._count = Math.min(this.count, aNewLength);
+    this.count = Math.min(this.count, aNewLength);
     this._back = this._nextIndex(this.count - 1);
   },
 
@@ -134,23 +138,6 @@ var buffer = EventEmitter.compose({
   },
 
   /**
-   * Appends data to the front of the buffer
-   * Also decrements the head index 
-   */
-  unshift: function CircularBuffer_unshift(aData) {
-    if (this.isFull()) {
-      this._back = this._prevIndex(this._back);
-    }
-    else {
-      this._count += 1;
-    }
-
-    this._front = this._prevIndex(this._front);
-    this._buffer[this._front] = aData;
-    this._emit(ON_WRITE, aData);
-  },
-  
-  /**
    * Reads data from the front, removes it, and returns it
    */
   shift: function CircularBuffer_shift() {
@@ -161,7 +148,7 @@ var buffer = EventEmitter.compose({
     }
 
     if (!this.isEmpty()) {
-      this._count -= 1;
+      this.count -= 1;
     }
     
     this._buffer[this._front] = undefined;
@@ -179,7 +166,7 @@ var buffer = EventEmitter.compose({
       this._front = this._nextIndex(this._front);
     }
     else {
-      this._count += 1;
+      this.count += 1;
     }
     
     this._buffer[this._back] = aData;
@@ -198,7 +185,7 @@ var buffer = EventEmitter.compose({
     }
 
     if (!this.isEmpty()) {
-      this._count -= 1;
+      this.count -= 1;
     }
     
     this._buffer[this._prevIndex(this._back)] = undefined;
@@ -226,7 +213,7 @@ var buffer = EventEmitter.compose({
     this._buffer = new Array(this.length);
     this._front = 0;
     this._back = 0;
-    this._count = 0;
+    this.count = 0;
     this._emit(ON_REMOVE);
   },
 

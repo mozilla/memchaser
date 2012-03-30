@@ -55,45 +55,22 @@ exports.test_readpush = function (test) {
   } 
 };
 
-exports.test_front_ops = function (test) {
-  var buffer = CircularBuffer( {length: 5} );
-
-  for (var i = 0; i < 5; i += 1) {
-    buffer.unshift(TestData[i]);
-  }
-
-  // Removes the entry from the first unshift
-  buffer.unshift(TestData[5]);
-  
-  // Removes the entry from the second unshift
-  buffer.unshift(TestData[6]);  
-  
-  for (var i = 0; i < 5; i += 1) {
-    test.assertEqual(buffer.shift().test, 6 - i, 
-                     "Test field in shifted data should be " + (6 - i));
-  }
-
-  test.assertEqual(buffer.shift(), undefined, 
-                   "Shifted data empty buffer should be undefined");
-  test.assert(buffer.isEmpty(), "Buffer should be empty");
-};
-
 exports.test_back_ops = function (test) {
   var buffer = CircularBuffer({ length: 5 });
 
   for (var i = 0; i < 5; i += 1) {
-    buffer.unshift(TestData[i]);
+    buffer.push(TestData[i]);
   }
 
-  // Removes the entry from the first unshift
-  buffer.unshift(TestData[5]);
+  // Removes the entry from the first push
+  buffer.push(TestData[5]);
   
-  // Removes the entry from the second unshift
-  buffer.unshift(TestData[6]); 
+  // Removes the entry from the second push
+  buffer.push(TestData[6]); 
   
-  for (var i = 0; i < 5; i += 1) {
-    test.assertEqual(buffer.pop().test, i + 2,
-                     "Test field in popped data should be " + (i + 2));
+  for (var i = 6; i >= 2; i -= 1) {
+    test.assertEqual(buffer.pop().test, i,
+                     "Test field in popped data should be " + i);
   }
 
   test.assertEqual(buffer.pop(), undefined, 
