@@ -14,7 +14,7 @@ var widgets = require("widget");
 var config = require("config");
 var garbage_collector = require("garbage-collector");
 var { Logger } = require("logger");
-var memory_reporter = require("memory-reporter");
+var memory = require("memory");
 
 
 var gData = {
@@ -31,6 +31,34 @@ exports.main = function (options, callbacks) {
   dir.append(self.name);
   var logger = new Logger({ dir: dir });
 
+  var contextPanel = require("panel").Panel({
+    width: 110,
+    height: 70,
+    contentURL: [self.data.url("panel/context.html")],
+    contentScriptFile: [self.data.url("panel/context.js")],
+    contentScriptWhen: "ready"
+  });
+
+  // If user clicks a panel entry the appropriate command has to be executed
+  contextPanel.port.on("command", function (data) {
+    contextPanel.hide();
+
+    switch (data.type) {
+      case "minimize_memory":
+        memory.minimizeMemory();
+        memory.reporter.retrieveStatistics();
+        break;
+      case "trigger_cc":
+        garbage_collector.doCC();
+        memory.reporter.retrieveStatistics();
+        break;
+      case "trigger_gc":
+        garbage_collector.doGlobalGC();
+        memory.reporter.retrieveStatistics();
+        break;
+    }
+  });
+
   var widget = widgets.Widget({
     id: "memchaser-widget",
     label: "MemChaser",
@@ -38,6 +66,7 @@ exports.main = function (options, callbacks) {
     contentURL: [self.data.url("widget/widget.html")],
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
+    panel: contextPanel,
     width: 360
   });
 
@@ -64,7 +93,7 @@ exports.main = function (options, callbacks) {
     widget.tooltip = config.extension.widget_tooltips[data];
   });
 
-  memory_reporter.on(config.application.topic_memory_statistics, function (aData) {
+  memory.reporter.on(config.application.topic_memory_statistics, function (aData) {
     if (gData.current.memory)
       gData.previous.memory = gData.current.memory;
     gData.current.memory = aData;
@@ -73,7 +102,7 @@ exports.main = function (options, callbacks) {
     logger.log(config.application.topic_memory_statistics, aData);
   });
 
-  garbage_collector.on(config.application.topic_gc_statistics, function (aData) {
+  garbage_collector.reporter.on(config.application.topic_gc_statistics, function (aData) {
     if (gData.current.gc)
       gData.previous.gc = gData.current.gc;
     gData.current.gc = aData;
@@ -82,7 +111,7 @@ exports.main = function (options, callbacks) {
     logger.log(config.application.topic_gc_statistics, aData);
   });
 
-  garbage_collector.on(config.application.topic_cc_statistics, function (aData) {
+  garbage_collector.reporter.on(config.application.topic_cc_statistics, function (aData) {
     if (gData.current.cc)
       gData.previous.cc = gData.current.cc;
     gData.current.cc = aData;

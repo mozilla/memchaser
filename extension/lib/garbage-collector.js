@@ -4,7 +4,11 @@
 
 "use strict";
 
-Components.utils.import('resource://gre/modules/Services.jsm');
+// We have to declare it ourselves because the SDK doens't export it correctly
+const Cu = Components.utils;
+
+
+Cu.import('resource://gre/modules/Services.jsm');
 
 
 const {Cc, Ci} = require("chrome");
@@ -62,7 +66,7 @@ const reporter = EventEmitter.compose({
     }
   },
 
-  _enable: function() {
+  _enable: function Reporter__enable() {
     let logging_pref= config.preferences.memory_log;
 
     var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
@@ -135,5 +139,28 @@ const reporter = EventEmitter.compose({
 })();
 
 
-exports.on = reporter.on;
-exports.removeListener = reporter.removeListener;
+/**
+ * Trigger a Cycle Collector run
+ */
+var doCC = function () {
+  let activeWindow = Services.wm.getMostRecentWindow("navigator:browser");
+
+  activeWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+              .getInterface(Ci.nsIDOMWindowUtils)
+              .cycleCollect();
+  Services.obs.notifyObservers(null, "child-cc-request", null);
+}
+
+/**
+ * Trigger a global Garbage Collector run
+ */
+var doGlobalGC = function () {
+  Cu.forceGC();
+  Services.obs.notifyObservers(null, "child-gc-request", null);
+}
+
+
+exports.reporter = reporter;
+
+exports.doCC = doCC;
+exports.doGlobalGC = doGlobalGC;
