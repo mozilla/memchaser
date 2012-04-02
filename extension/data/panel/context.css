@@ -1,0 +1,25 @@
+body {
+  font-family: "Lucida Grande", "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  -moz-user-select: -moz-none;
+}
+
+#menu, #menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#menu li a {
+  display: block;
+  height: 1.5em;
+  color: #888;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#menu li:hover ul {
+  display: block;
+  color: #fff;
+}
