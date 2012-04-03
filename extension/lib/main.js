@@ -61,8 +61,7 @@ exports.main = function (options, callbacks) {
         widget.port.emit("update_logger", { "active": logger.active });
         break;
       case "minimize_memory":
-        memory.minimizeMemory();
-        memory.reporter.retrieveStatistics();
+        memory.minimizeMemory(memory.reporter.retrieveStatistics);
         break;
       case "trigger_cc":
         garbage_collector.doCC();
