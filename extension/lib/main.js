@@ -45,8 +45,7 @@ exports.main = function (options, callbacks) {
 
     switch (data.type) {
       case "minimize_memory":
-        memory.minimizeMemory();
-        memory.reporter.retrieveStatistics();
+        memory.minimizeMemory(memory.reporter.retrieveStatistics);
         break;
       case "trigger_cc":
         garbage_collector.doCC();
