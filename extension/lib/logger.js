@@ -2,20 +2,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+// We have to declare it ourselves because the SDK doesn't export it correctly
+const Cu = Components.utils;
+
+Cu.import('resource://gre/modules/Services.jsm');
+Cu.import("resource://gre/modules/NetUtil.jsm");
 
 const { Cc, Ci } = require("chrome");
 const unload = require("api-utils/unload");
 
-const PERMS_DIRECTORY = parseInt("0777", 8);
-const PERMS_FILE = parseInt("0666", 8);
+const PERMS_DIRECTORY = parseInt("0755", 8);
+const PERMS_FILE = parseInt("0655", 8);
 
 function Logger(aOptions) {
   aOptions = aOptions || {};
-  this._dir = aOptions.dir;
+  this._dir = null;
   this._file = null;
   this._active = false;
   this._firstLog = false;
+
+  this.dir = aOptions.dir;
 
   unload.ensure(this, 'unload');
 
@@ -41,6 +47,36 @@ Logger.prototype = {
     else {
       this.stop();
     }
+  },
+
+  get dir() {
+    return this._dir;
+  },
+
+  set dir(aValue) {
+    try {
+      // Check if the value is an instance of nsILocalFile
+      aValue.QueryInterface(Ci.nsILocalFile);
+      this._dir = aValue;
+    }
+    catch (e) {
+      // Otherwise we also support a path
+      if (typeof(aValue) === 'string') {
+        let dir = Cc['@mozilla.org/file/local;1']
+                  .createInstance(Ci.nsILocalFile);
+        dir.initWithPath(aValue);
+        this._dir = dir;
+      }
+      else {
+        throw new TypeError('A directory can only be a string of the path ' +
+                            'or a nsILocalFile');
+      }
+    }
+
+    // Create the directory if it does not already exist
+    if (!this._dir.exists()) {
+      this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
+    }
   }
 };
 
@@ -49,12 +85,7 @@ Logger.prototype.unload = function Logger_unload() {
 };
 
 Logger.prototype.prepareFile = function Logger_prepareFile() {
-  if (!this._dir.exists())
-    this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
-  else if (!this._dir.isDirectory())
-    throw new Error(this._dir.path + " is not a directory.");
-
-  var file = this._dir.clone();
+  var file = this.dir.clone();
   file.append(Date.now() + ".log");
 
   this._file = file;
@@ -69,10 +100,10 @@ Logger.prototype.start = function Logger_start() {
   }
 };
 
-Logger.prototype.stop = function Logger_stop() {
+Logger.prototype.stop = function Logger_stop(aCallback) {
   if (this.active) {
     this._active = false;
-    this._writeAsync(']');
+    this._writeAsync(']', aCallback);
   }
 };
 

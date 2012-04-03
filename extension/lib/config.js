@@ -4,6 +4,7 @@
 
 "use strict";
 
+
 const self = require('self');
 const xulapp = require('xul-app');
 
@@ -13,6 +14,7 @@ const xulapp = require('xul-app');
  */
 const PREFERENCES = {
     // Extension related preferences
+    log_directory: 'extensions.' + self.id + '.log.directory',
     memory_poll_interval: 'extensions.' + self.id + '.memory.interval',
     modified_prefs: 'extensions.' + self.id + '.modifiedPrefs',
 

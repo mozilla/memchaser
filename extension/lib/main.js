@@ -4,25 +4,22 @@
 
 "use strict";
 
-
-// We have to declare it ourselves because the SDK doens't export it correctly
+// We have to declare it ourselves because the SDK doesn't export it correctly
 const Cu = Components.utils;
-
 
 Cu.import('resource://gre/modules/Services.jsm');
 
+const { Cc, Ci } = require("chrome");
+const events = require("events");
+const prefs = require("api-utils/preferences-service");
+const self = require("self");
+const simple_prefs = require("simple-prefs");
+const widgets = require("widget");
 
-var { Cc, Ci } = require("chrome");
-var events = require("events");
-var prefs = require("api-utils/preferences-service");
-var self = require("self");
-var widgets = require("widget");
-
-var config = require("config");
-var garbage_collector = require("garbage-collector");
-var { Logger } = require("logger");
+const config = require("config");
+const garbage_collector = require("garbage-collector");
+const { Logger } = require("logger");
 var memory = require("memory");
-
 
 var gData = {
   current: {},
@@ -31,6 +28,17 @@ var gData = {
 
 
 exports.main = function (options, callbacks) {
+
+  // Get the file directory from the prefs,
+  // and fallback on the profile directory if not specified
+  var dir = prefs.get(config.preferences.log_directory, "");
+
+  if (!dir) {
+    dir = Services.dirsvc.get("ProfD", Ci.nsILocalFile);
+    dir.append(self.name);
+
+    prefs.set(config.preferences.log_directory, dir.path);
+  }
 
   // Create logger instance
   var dir = Services.dirsvc.get("ProfD", Ci.nsIFile);
@@ -54,7 +62,7 @@ exports.main = function (options, callbacks) {
         // Show the memchaser directory.
         let nsLocalFile = Components.Constructor("@mozilla.org/file/local;1",
                                                  "nsILocalFile", "initWithPath");
-        new nsLocalFile(dir.path).reveal();
+        new nsLocalFile(logger.dir.path).reveal();
         break;
       case "logger_status":
         logger.active = !logger.active;
@@ -125,6 +133,10 @@ exports.main = function (options, callbacks) {
 
     widget.port.emit('update_cycle_collector', gData);
     logger.log(config.application.topic_cc_statistics, aData);
+  });
+
+  simple_prefs.on('log.directory', function (aData) {
+    logger.dir = prefs.get(config.preferences.log_directory);
   });
 }
 

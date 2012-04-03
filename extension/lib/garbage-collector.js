@@ -4,7 +4,7 @@
 
 "use strict";
 
-// We have to declare it ourselves because the SDK doens't export it correctly
+// We have to declare it ourselves because the SDK doesn't export it correctly
 const Cu = Components.utils;
 
 
