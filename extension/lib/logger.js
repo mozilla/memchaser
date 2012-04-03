@@ -32,6 +32,15 @@ Logger.prototype = {
 
   get active() {
     return this._active;
+  },
+
+  set active(aValue) {
+    if (aValue) {
+      this.start();
+    }
+    else {
+      this.stop();
+    }
   }
 };
 

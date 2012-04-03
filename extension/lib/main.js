@@ -4,8 +4,15 @@
 
 "use strict";
 
-var { Cc, Ci } = require("chrome");
 
+// We have to declare it ourselves because the SDK doens't export it correctly
+const Cu = Components.utils;
+
+
+Cu.import('resource://gre/modules/Services.jsm');
+
+
+var { Cc, Ci } = require("chrome");
 var events = require("events");
 var prefs = require("api-utils/preferences-service");
 var self = require("self");
@@ -26,14 +33,13 @@ var gData = {
 exports.main = function (options, callbacks) {
 
   // Create logger instance
-  var dir = Cc["@mozilla.org/file/directory_service;1"]
-            .getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+  var dir = Services.dirsvc.get("ProfD", Ci.nsIFile);
   dir.append(self.name);
   var logger = new Logger({ dir: dir });
 
   var contextPanel = require("panel").Panel({
-    width: 110,
-    height: 70,
+    width: 128,
+    height: 107,
     contentURL: [self.data.url("panel/context.html")],
     contentScriptFile: [self.data.url("panel/context.js")],
     contentScriptWhen: "ready"
@@ -44,6 +50,16 @@ exports.main = function (options, callbacks) {
     contextPanel.hide();
 
     switch (data.type) {
+      case "log_folder":
+        // Show the memchaser directory.
+        let nsLocalFile = Components.Constructor("@mozilla.org/file/local;1",
+                                                 "nsILocalFile", "initWithPath");
+        new nsLocalFile(dir.path).reveal();
+        break;
+      case "logger_status":
+        logger.active = !logger.active;
+        widget.port.emit("update_logger", { "active": logger.active });
+        break;
       case "minimize_memory":
         memory.minimizeMemory();
         memory.reporter.retrieveStatistics();
@@ -67,18 +83,10 @@ exports.main = function (options, callbacks) {
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
     panel: contextPanel,
-    width: 360
-  });
-
-  // If logger is clicked, then the state must be changed
-  widget.port.on("logger_click", function () {
-    if (logger.active) {
-      logger.stop();
-    } else {
-      logger.start();
+    width: 360,
+    onClick: function () {
+      contextPanel.port.emit("update", { logger_active: logger.active });
     }
-
-    widget.port.emit("logger_update", { "active": logger.active });
   });
 
   // If user hovers over an entry the tooltip has to be updated
