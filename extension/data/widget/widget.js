@@ -2,16 +2,11 @@ const BYTE_TO_MEGABYTE = 1/1048576;
 
 const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
 
-var setup = function () {
-  let logger = document.getElementById("logger");
-  let tooltipElements = [].slice.call(document.querySelectorAll("[data-tooltip]"));
 
-  logger.onclick = function () {
-    self.port.emit("logger_click");
-    self.port.emit("update_tooltip", this.dataset.tooltip);
-  };
+(function setup() {
+  let elements = [].slice.call(document.querySelectorAll("[data-tooltip]"));
 
-  tooltipElements.forEach(function (element) {
+  elements.forEach(function (element) {
     element.onmouseover = function () {
       self.port.emit("update_tooltip", this.dataset.tooltip);
     };
@@ -22,7 +17,8 @@ var setup = function () {
   // we have to resort to the following workaround:
   document.getElementById("splash").style.display = "none";
   document.getElementById("init").style.display = "inline";
-};
+})();
+
 
 /**
  * Get the duration of the given GC or CC entry
@@ -72,12 +68,6 @@ var isIncrementalGC = function (aEntry) {
 }
 
 
-self.port.on("logger_update", function (data) {
-  let logger = document.getElementById("logger");
-
-  logger.className = (data["active"]) ? "enabled" : "disabled";
-});
-
 /**
  * Update the values of the specified collector
  */
@@ -115,13 +105,6 @@ var updateCollector = function (aType, aData) {
 
 }
 
-self.port.on('update_cycle_collector', function (aData) {
-  updateCollector('cc', aData);
-});
-
-self.port.on("update_garbage_collector", function (aData) {
-  updateCollector('gc', aData);
-});
 
 self.port.on("update_memory", function (data) {
   hideInitText();
@@ -135,4 +118,18 @@ self.port.on("update_memory", function (data) {
   });
 });
 
-setup();
+
+self.port.on('update_cycle_collector', function (aData) {
+  updateCollector('cc', aData);
+});
+
+
+self.port.on("update_garbage_collector", function (aData) {
+  updateCollector('gc', aData);
+});
+
+
+self.port.on("update_logger", function (data) {
+  let logger = document.getElementById("logger");
+  logger.className = (data["active"]) ? "enabled" : "disabled";
+});

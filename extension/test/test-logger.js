@@ -20,6 +20,12 @@ exports.test_start_stop_logging = function (test) {
   logger.stop();
   test.assert(!logger.active);
 
+  logger.active = true;
+  test.assert(logger.active);
+
+  logger.active = false;
+  test.assert(!logger.active);
+
   logger._file.remove(false);
   test.assert(!logger._file.exists(), "Clean-up; delete test file");
 }
