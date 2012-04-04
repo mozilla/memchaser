@@ -1,3 +1,20 @@
+0.3 / 2012-04-04
+==================
+  * Allow user to specify where logs are saved (#119)
+  * Add panel options to access log folder and start/stop logging (#115)
+  * Add panel items for triggering a GC or CC, and Minimize Memory Usage (#114, #118)
+  * Updated logger to write out valid JSON (#110)
+  * Fixed invisible appearance in toolbar palette (#111)
+  * Added targets for 'run' and 'test' (#109)
+  * Pass-through all GC/CC information and extract values in widget.js (#107)
+  * Add support for the new SpiderMonkey GC Statistics API (#99)
+  * Implemented asynchronous logging (#55)
+  * Fixes widget onclick handler for logger out of sync issue (#105)
+  * Added a release target to the build script (#98)
+  * Refactor usage of preference names and constants (#102)
+  * Added tooltips to widget elements (#84)
+  * Fix properties in garbage collector message for Firefox 14 (#93)
+
 0.2.1 / 2012-03-16
 ==================
 
