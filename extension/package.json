@@ -16,5 +16,11 @@
         "title": "Poll interval for memory information (ms)",
         "type": "integer",
         "value": 2000
+    },
+    {
+        "name": "log.directory",
+        "title": "The directory where logs are stored",
+        "type": "directory",
+        "value": ""
     }]
 }
