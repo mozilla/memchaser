@@ -31,9 +31,9 @@ function Logger(aOptions) {
   unload.ensure(this, 'unload');
 
   // Converter to create input streams out of strings
-  this._converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"]
+  this._converter = Cc['@mozilla.org/intl/scriptableunicodeconverter']
                     .createInstance(Ci.nsIScriptableUnicodeConverter);
-  this._converter.charset = "UTF-8";
+  this._converter.charset = 'UTF-8';
 }
 
 Logger.prototype = {
@@ -117,7 +117,7 @@ Logger.prototype.notifyInvalidPath = function Logger_notifyInvalidPath() {
     { label: 'Select Path',
       accessKey: 'S',
       callback: function () {
-        let filePicker = Cc["@mozilla.org/filepicker;1"]
+        let filePicker = Cc['@mozilla.org/filepicker;1']
                          .createInstance(Ci.nsIFilePicker);
         filePicker.init(window, 'The directory where logs are stored',
                         Ci.nsIFilePicker.modeGetFolder)
@@ -133,7 +133,7 @@ Logger.prototype.notifyInvalidPath = function Logger_notifyInvalidPath() {
 
 Logger.prototype.prepareFile = function Logger_prepareFile() {
   var file = this.dir.clone();
-  file.append(Date.now() + ".log");
+  file.append(Date.now() + '.log');
 
   this._file = file;
   this._firstLog = true;
