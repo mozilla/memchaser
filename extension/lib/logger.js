@@ -5,14 +5,17 @@
 // We have to declare it ourselves because the SDK doesn't export it correctly
 const Cu = Components.utils;
 
+Cu.import('resource://gre/modules/NetUtil.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
-Cu.import("resource://gre/modules/NetUtil.jsm");
 
-const { Cc, Ci } = require("chrome");
-const unload = require("api-utils/unload");
+const { Cc, Ci } = require('chrome');
+const prefs = require('api-utils/preferences-service');
+const tabs = require('tabs');
+const unload = require('api-utils/unload');
+const window_utils = require('window-utils');
 
-const PERMS_DIRECTORY = parseInt("0755", 8);
-const PERMS_FILE = parseInt("0655", 8);
+const PERMS_DIRECTORY = parseInt('0755', 8);
+const PERMS_FILE = parseInt('0655', 8);
 
 function Logger(aOptions) {
   aOptions = aOptions || {};
@@ -22,6 +25,8 @@ function Logger(aOptions) {
   this._firstLog = false;
 
   this.dir = aOptions.dir;
+  // Optionally allows a preference to stay in sync with directory changes
+  this.pref = aOptions.pref;
 
   unload.ensure(this, 'unload');
 
@@ -50,6 +55,13 @@ Logger.prototype = {
   },
 
   get dir() {
+    try {
+      this._dir.QueryInterface(Ci.nsILocalFile);
+    }
+    catch (e) {
+      this.notifyInvalidPath();
+    }
+
     return this._dir;
   },
 
@@ -62,10 +74,15 @@ Logger.prototype = {
     catch (e) {
       // Otherwise we also support a path
       if (typeof(aValue) === 'string') {
-        let dir = Cc['@mozilla.org/file/local;1']
-                  .createInstance(Ci.nsILocalFile);
-        dir.initWithPath(aValue);
-        this._dir = dir;
+        try {
+          let dir = Cc['@mozilla.org/file/local;1']
+                    .createInstance(Ci.nsILocalFile);
+          dir.initWithPath(aValue);
+          this._dir = dir;
+        }
+        catch (e2) {
+          this.notifyInvalidPath();
+        }
       }
       else {
         throw new TypeError('A directory can only be a string of the path ' +
@@ -77,11 +94,41 @@ Logger.prototype = {
     if (!this._dir.exists()) {
       this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
     }
+
+    if (this.pref) {
+      prefs.set(this.pref, this._dir.path);
+    }
   }
 };
 
 Logger.prototype.unload = function Logger_unload() {
   this.stop();
+};
+
+Logger.prototype.notifyInvalidPath = function Logger_notifyInvalidPath() {
+  this._dir = null;
+  let self = this;
+  let window = window_utils.activeBrowserWindow;
+  window.PopupNotifications.show(
+    window.gBrowser.selectedBrowser,
+    'loggernotification',
+    'Error: The path you have selected is invalid',
+    null,
+    { label: 'Select Path',
+      accessKey: 'S',
+      callback: function () {
+        let filePicker = Cc["@mozilla.org/filepicker;1"]
+                         .createInstance(Ci.nsIFilePicker);
+        filePicker.init(window, 'The directory where logs are stored',
+                        Ci.nsIFilePicker.modeGetFolder)
+
+        let value = filePicker.show();
+        if (value === Ci.nsIFilePicker.returnOK) {
+          self.dir = filePicker.file;
+        }
+      }  
+    }
+  );
 };
 
 Logger.prototype.prepareFile = function Logger_prepareFile() {
@@ -112,7 +159,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   //dump(aMessage + '\n');
 
   // Create an output stream to write to file
-  var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+  var foStream = Cc['@mozilla.org/network/file-output-stream;1']
                  .createInstance(Ci.nsIFileOutputStream);
   foStream.init(this._file, 0x02 | 0x08 | 0x10, PERMS_FILE, foStream.DEFER_OPEN);
 
@@ -121,15 +168,15 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   var iStream = this._converter.convertToInputStream(aMessage);
   NetUtil.asyncCopy(iStream, foStream, function (status) {
     if (!Components.isSuccessCode(status)) {
-      var errorMessage = new Error("Error while writing to file: " + status);
+      var errorMessage = new Error('Error while writing to file: ' + status);
       console.error(errorMessage);
     }
 
-    if (typeof(aCallback) === "function") {
+    if (typeof(aCallback) === 'function') {
       aCallback(status);
     }
   });
-}
+};
 
 Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
   if (this.active) {
