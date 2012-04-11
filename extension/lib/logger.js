@@ -9,10 +9,7 @@ Cu.import('resource://gre/modules/NetUtil.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
 
 const { Cc, Ci } = require('chrome');
-const prefs = require('api-utils/preferences-service');
-const tabs = require('tabs');
 const unload = require('api-utils/unload');
-const window_utils = require('window-utils');
 
 const PERMS_DIRECTORY = parseInt('0755', 8);
 const PERMS_FILE = parseInt('0655', 8);
@@ -25,8 +22,6 @@ function Logger(aOptions) {
   this._firstLog = false;
 
   this.dir = aOptions.dir;
-  // Optionally allows a preference to stay in sync with directory changes
-  this.pref = aOptions.pref;
 
   unload.ensure(this, 'unload');
 
@@ -81,7 +76,7 @@ Logger.prototype = {
           this._dir = dir;
         }
         catch (e2) {
-          this.notifyInvalidPath();
+          throw new Error('The path you have selected is invalid');
         }
       }
       else {
@@ -94,41 +89,11 @@ Logger.prototype = {
     if (!this._dir.exists()) {
       this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
     }
-
-    if (this.pref) {
-      prefs.set(this.pref, this._dir.path);
-    }
   }
 };
 
 Logger.prototype.unload = function Logger_unload() {
   this.stop();
-};
-
-Logger.prototype.notifyInvalidPath = function Logger_notifyInvalidPath() {
-  this._dir = null;
-  let self = this;
-  let window = window_utils.activeBrowserWindow;
-  window.PopupNotifications.show(
-    window.gBrowser.selectedBrowser,
-    'loggernotification',
-    'Error: The path you have selected is invalid',
-    null,
-    { label: 'Select Path',
-      accessKey: 'S',
-      callback: function () {
-        let filePicker = Cc['@mozilla.org/filepicker;1']
-                         .createInstance(Ci.nsIFilePicker);
-        filePicker.init(window, 'The directory where logs are stored',
-                        Ci.nsIFilePicker.modeGetFolder)
-
-        let value = filePicker.show();
-        if (value === Ci.nsIFilePicker.returnOK) {
-          self.dir = filePicker.file;
-        }
-      }  
-    }
-  );
 };
 
 Logger.prototype.prepareFile = function Logger_prepareFile() {

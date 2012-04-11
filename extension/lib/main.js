@@ -15,6 +15,7 @@ const prefs = require("api-utils/preferences-service");
 const self = require("self");
 const simple_prefs = require("simple-prefs");
 const widgets = require("widget");
+const window_utils = require('window-utils');
 
 const config = require("config");
 const garbage_collector = require("garbage-collector");
@@ -26,6 +27,12 @@ var gData = {
   previous: {}
 };
 
+var showNotification = function (aId, aMessage, aActions) {
+  let window = window_utils.activeBrowserWindow;
+  window.PopupNotifications.show(
+    window.gBrowser.selectedBrowser, aId, aMessage, null, aActions
+  );
+}
 
 exports.main = function (options, callbacks) {
 
@@ -136,7 +143,31 @@ exports.main = function (options, callbacks) {
   });
 
   simple_prefs.on('log.directory', function (aData) {
-    logger.dir = prefs.get(config.preferences.log_directory);
+    try {
+      logger.dir = prefs.get(config.preferences.log_directory);
+    }
+    catch (e) {
+      console.error(e.message);
+
+      let window = window_utils.activeBrowserWindow;
+      showNotification('logger_error', e.message, { 
+        label: 'Select Path',
+        accessKey: 'S',
+        callback: function () {
+          let filePicker = Cc['@mozilla.org/filepicker;1']
+                           .createInstance(Ci.nsIFilePicker);
+          filePicker.init(window, 'The directory where logs are stored',
+                        Ci.nsIFilePicker.modeGetFolder)
+
+          let value = filePicker.show();
+          if (value === Ci.nsIFilePicker.returnOK) {
+            logger.dir = filePicker.file;
+          }
+        }
+      });
+
+      prefs.set(config.preferences.log_directory, logger.dir.path);
+    }
   });
 }
 
