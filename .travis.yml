@@ -6,7 +6,17 @@ before_script:
  - cd addon-sdk
  - . bin/activate
  - cd ../extension
+
 env:
  - DISPLAY=':99.0'
 
 script: cfx test
+
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#automation"
+    on_success: always
+    on_failure: always
+    use_notice: true
+
