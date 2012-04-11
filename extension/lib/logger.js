@@ -50,13 +50,6 @@ Logger.prototype = {
   },
 
   get dir() {
-    try {
-      this._dir.QueryInterface(Ci.nsILocalFile);
-    }
-    catch (e) {
-      this.notifyInvalidPath();
-    }
-
     return this._dir;
   },
 

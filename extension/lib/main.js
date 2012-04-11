@@ -50,7 +50,7 @@ exports.main = function (options, callbacks) {
   // Create logger instance
   var dir = Services.dirsvc.get("ProfD", Ci.nsIFile);
   dir.append(self.name);
-  var logger = new Logger({ dir: dir, pref: config.preferences.log_directory });
+  var logger = new Logger({ dir: dir });
 
   var contextPanel = require("panel").Panel({
     width: 128,

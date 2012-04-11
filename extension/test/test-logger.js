@@ -121,12 +121,3 @@ exports.test_start_directory_change_string = function (test) {
 
   test.waitUntilDone(2000);
 }
-
-exports.test_pref_sync = function (test) {
-  var logger = new Logger({ dir: dir, pref: 'test.pref' });
-  var newDir = dir.clone();
-  newDir.append('newdir');
-
-  logger.dir = newDir.path;
-  test.assertEqual(newDir.path, prefs.get('test.pref'));
-}
