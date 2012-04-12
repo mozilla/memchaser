@@ -162,6 +162,7 @@ exports.main = function (options, callbacks) {
           let value = filePicker.show();
           if (value === Ci.nsIFilePicker.returnOK) {
             logger.dir = filePicker.file;
+            prefs.set(config.preferences.log_directory, logger.dir.path);
           }
         }
       });

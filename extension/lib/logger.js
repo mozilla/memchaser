@@ -54,34 +54,38 @@ Logger.prototype = {
   },
 
   set dir(aValue) {
-    try {
-      // Check if the value is an instance of nsILocalFile
-      aValue.QueryInterface(Ci.nsILocalFile);
-      this._dir = aValue;
-    }
-    catch (e) {
-      // Otherwise we also support a path
-      if (typeof(aValue) === 'string') {
-        try {
-          let dir = Cc['@mozilla.org/file/local;1']
-                    .createInstance(Ci.nsILocalFile);
-          dir.initWithPath(aValue);
-          this._dir = dir;
-        }
-        catch (e2) {
-          throw new Error('The path you have selected is invalid');
-        }
+    var temp;
+
+    // Check if the value is a string of a path
+    if (typeof(aValue) === 'string') {
+      try {
+        let dir = Cc['@mozilla.org/file/local;1']
+                  .createInstance(Ci.nsILocalFile);
+        dir.initWithPath(aValue);
+        temp = dir;
       }
-      else {
+      catch (e2) {
+        throw new Error('The selected path is invalid');
+      }
+    }
+    else {
+      try {
+        // Check if the value is an instance of nsILocalFile
+        aValue.QueryInterface(Ci.nsILocalFile);
+        temp = aValue;
+      }
+      catch (e) {
         throw new TypeError('A directory can only be a string of the path ' +
                             'or a nsILocalFile');
       }
     }
 
     // Create the directory if it does not already exist
-    if (!this._dir.exists()) {
-      this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
+    if (!temp.exists()) {
+      temp.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
     }
+
+    this._dir = temp;
   }
 };
 
