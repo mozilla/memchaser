@@ -27,12 +27,35 @@ var gData = {
   previous: {}
 };
 
+// Notifies the user with a popup notification
 var showNotification = function (aId, aMessage, aActions) {
   let window = window_utils.activeBrowserWindow;
   window.PopupNotifications.show(
     window.gBrowser.selectedBrowser, aId, aMessage, null, aActions
   );
-}
+};
+
+var notifyInvalidPath = function (logger, message) {
+  console.error(message);
+
+  let window = window_utils.activeBrowserWindow;
+  showNotification('logger_error', message, { 
+    label: 'Select Path',
+    accessKey: 'S',
+    callback: function () {
+      let filePicker = Cc['@mozilla.org/filepicker;1']
+                       .createInstance(Ci.nsIFilePicker);
+      filePicker.init(window, 'The directory where logs are stored',
+                    Ci.nsIFilePicker.modeGetFolder)
+
+      let value = filePicker.show();
+      if (value === Ci.nsIFilePicker.returnOK) {
+        logger.dir = filePicker.file;
+        prefs.set(config.preferences.log_directory, logger.dir.path);
+      }
+    }
+  });
+};
 
 exports.main = function (options, callbacks) {
 
@@ -40,17 +63,17 @@ exports.main = function (options, callbacks) {
   // and fallback on the profile directory if not specified
   var dir = prefs.get(config.preferences.log_directory, "");
 
-  if (!dir) {
+  // Create logger instance
+  try {
+    var logger = new Logger({ dir: dir });
+  }
+  catch (e) {
     dir = Services.dirsvc.get("ProfD", Ci.nsILocalFile);
     dir.append(self.name);
 
-    prefs.set(config.preferences.log_directory, dir.path);
+    var logger = new Logger({ dir: dir })
+    prefs.set(config.preferences.log_directory, logger.dir.path);
   }
-
-  // Create logger instance
-  var dir = Services.dirsvc.get("ProfD", Ci.nsIFile);
-  dir.append(self.name);
-  var logger = new Logger({ dir: dir });
 
   var contextPanel = require("panel").Panel({
     width: 128,
@@ -147,26 +170,7 @@ exports.main = function (options, callbacks) {
       logger.dir = prefs.get(config.preferences.log_directory);
     }
     catch (e) {
-      console.error(e.message);
-
-      let window = window_utils.activeBrowserWindow;
-      showNotification('logger_error', e.message, { 
-        label: 'Select Path',
-        accessKey: 'S',
-        callback: function () {
-          let filePicker = Cc['@mozilla.org/filepicker;1']
-                           .createInstance(Ci.nsIFilePicker);
-          filePicker.init(window, 'The directory where logs are stored',
-                        Ci.nsIFilePicker.modeGetFolder)
-
-          let value = filePicker.show();
-          if (value === Ci.nsIFilePicker.returnOK) {
-            logger.dir = filePicker.file;
-            prefs.set(config.preferences.log_directory, logger.dir.path);
-          }
-        }
-      });
-
+      notifyInvalidPath(logger, e.message);
       prefs.set(config.preferences.log_directory, logger.dir.path);
     }
   });

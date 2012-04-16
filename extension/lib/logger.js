@@ -21,9 +21,9 @@ function Logger(aOptions) {
   this._active = false;
   this._firstLog = false;
 
-  this.dir = aOptions.dir;
-
   unload.ensure(this, 'unload');
+
+  this.dir = aOptions.dir;
 
   // Converter to create input streams out of strings
   this._converter = Cc['@mozilla.org/intl/scriptableunicodeconverter']
