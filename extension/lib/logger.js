@@ -64,7 +64,7 @@ Logger.prototype = {
         dir.initWithPath(aValue);
         temp = dir;
       }
-      catch (e2) {
+      catch (e) {
         throw new Error('The selected path is invalid');
       }
     }

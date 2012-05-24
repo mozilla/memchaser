@@ -35,28 +35,6 @@ var showNotification = function (aId, aMessage, aActions) {
   );
 };
 
-var notifyInvalidPath = function (logger, message) {
-  console.error(message);
-
-  let window = window_utils.activeBrowserWindow;
-  showNotification('logger_error', message, { 
-    label: 'Select Path',
-    accessKey: 'S',
-    callback: function () {
-      let filePicker = Cc['@mozilla.org/filepicker;1']
-                       .createInstance(Ci.nsIFilePicker);
-      filePicker.init(window, 'The directory where logs are stored',
-                    Ci.nsIFilePicker.modeGetFolder)
-
-      let value = filePicker.show();
-      if (value === Ci.nsIFilePicker.returnOK) {
-        logger.dir = filePicker.file;
-        prefs.set(config.preferences.log_directory, logger.dir.path);
-      }
-    }
-  });
-};
-
 exports.main = function (options, callbacks) {
 
   // Get the file directory from the prefs,
@@ -170,7 +148,7 @@ exports.main = function (options, callbacks) {
       logger.dir = prefs.get(config.preferences.log_directory);
     }
     catch (e) {
-      notifyInvalidPath(logger, e.message);
+      showNotification('logger_error', e.message, null);
       prefs.set(config.preferences.log_directory, logger.dir.path);
     }
   });
