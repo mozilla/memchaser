@@ -19,7 +19,8 @@ const PREFERENCES = {
     modified_prefs: 'extensions.' + self.id + '.modifiedPrefs',
 
     // Application preferences
-    memory_log: 'javascript.options.mem.log'
+    memory_log: 'javascript.options.mem.log',
+    memory_notify: 'javascript.options.mem.notify'
 }
 
 

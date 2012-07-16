@@ -27,9 +27,16 @@ const reporter = EventEmitter.compose({
     // Make sure we clean-up correctly
     unload.ensure(this, 'unload');
 
-    // For now the logger preference has to be enabled to be able to
-    // parse the GC / CC information from the console service messages
-    this._isEnabled = prefs.get(config.preferences.memory_log);
+    if (config.application.branch >= 16) {
+      // The notify preference has to be enabled to be able to parse
+      // the GC / CC information from the notifications
+      this._isEnabled = prefs.get(config.preferences.memory_notify);
+    }
+    else {
+      // The logger preference has to be enabled to be able to parse
+      // the GC / CC information from the console service messages
+      this._isEnabled = prefs.get(config.preferences.memory_log);
+    }
     if (!this._isEnabled)
       this._enable();
 
@@ -67,15 +74,21 @@ const reporter = EventEmitter.compose({
   },
 
   _enable: function Reporter__enable() {
-    let logging_pref= config.preferences.memory_log;
+    var memory_pref;
+    if (config.application.branch >= 16) {
+      memory_pref = config.preferences.memory_notify;
+    }
+    else {
+      memory_pref = config.preferences.memory_log;
+    }
 
     var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
                                              "{}"));
-    if (!modifiedPrefs.hasOwnProperty(logging_pref)) {
-      modifiedPrefs[logging_pref] = prefs.get(logging_pref);
+    if (!modifiedPrefs.hasOwnProperty(memory_pref)) {
+      modifiedPrefs[memory_pref] = prefs.get(memory_pref);
     }
 
-    prefs.set(logging_pref, true);
+    prefs.set(memory_pref, true);
     prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
