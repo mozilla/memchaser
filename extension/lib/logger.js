@@ -2,14 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// We have to declare it ourselves because the SDK doesn't export it correctly
-const Cu = Components.utils;
-
-Cu.import('resource://gre/modules/Services.jsm');
-Cu.import("resource://gre/modules/NetUtil.jsm");
-
-const { Cc, Ci } = require("chrome");
+const { components, Cc, Ci, Cu } = require("chrome");
 const unload = require("api-utils/unload");
+
+Cu.import('resource://gre/modules/NetUtil.jsm');
+Cu.import('resource://gre/modules/Services.jsm');
 
 const PERMS_DIRECTORY = parseInt("0755", 8);
 const PERMS_FILE = parseInt("0655", 8);
@@ -120,7 +117,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   // Input and output streams are closed after write
   var iStream = this._converter.convertToInputStream(aMessage);
   NetUtil.asyncCopy(iStream, foStream, function (status) {
-    if (!Components.isSuccessCode(status)) {
+    if (!components.isSuccessCode(status)) {
       var errorMessage = new Error("Error while writing to file: " + status);
       console.error(errorMessage);
     }

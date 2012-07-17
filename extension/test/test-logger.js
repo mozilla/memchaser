@@ -1,7 +1,8 @@
-Components.utils.import('resource://gre/modules/Services.jsm');
+const { Cc, Ci, Cu } = require("chrome");
 
-const { Cc, Ci } = require("chrome");
-const { Logger } = require("memchaser/logger")
+const { Logger } = require("memchaser/logger");
+
+Cu.import('resource://gre/modules/Services.jsm');
 
 const dir = Services.dirsvc.get("TmpD", Ci.nsILocalFile);
 

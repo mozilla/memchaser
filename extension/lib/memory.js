@@ -4,14 +4,10 @@
 
 "use strict";
 
-// We have to declare it ourselves because the SDK doesn't export it correctly
-const Cu = Components.utils;
+const { Cc, Ci, Cu } = require("chrome");
 
+const { Services } = Cu.import('resource://gre/modules/Services.jsm');
 
-Cu.import('resource://gre/modules/Services.jsm');
-
-
-const {Cc, Ci} = require("chrome");
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const self = require("self");
