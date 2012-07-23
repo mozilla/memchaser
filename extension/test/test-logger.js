@@ -1,7 +1,8 @@
 Components.utils.import('resource://gre/modules/Services.jsm');
 
 const { Cc, Ci } = require("chrome");
-const { Logger } = require("memchaser/logger")
+const { Logger } = require("memchaser/logger");
+const prefs = require('api-utils/preferences-service');
 
 const dir = Services.dirsvc.get("TmpD", Ci.nsILocalFile);
 

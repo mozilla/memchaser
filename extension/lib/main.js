@@ -15,6 +15,7 @@ const prefs = require("api-utils/preferences-service");
 const self = require("self");
 const simple_prefs = require("simple-prefs");
 const widgets = require("widget");
+const window_utils = require('window-utils');
 
 const config = require("config");
 const garbage_collector = require("garbage-collector");
@@ -26,6 +27,13 @@ var gData = {
   previous: {}
 };
 
+// Notifies the user with a popup notification
+var showNotification = function (aId, aMessage, aActions) {
+  let window = window_utils.activeBrowserWindow;
+  window.PopupNotifications.show(
+    window.gBrowser.selectedBrowser, aId, aMessage, null, aActions
+  );
+};
 
 exports.main = function (options, callbacks) {
 
@@ -33,15 +41,17 @@ exports.main = function (options, callbacks) {
   // and fallback on the profile directory if not specified
   var dir = prefs.get(config.preferences.log_directory, "");
 
-  if (!dir) {
+  // Create logger instance
+  try {
+    var logger = new Logger({ dir: dir });
+  }
+  catch (e) {
     dir = Services.dirsvc.get("ProfD", Ci.nsILocalFile);
     dir.append(self.name);
 
-    prefs.set(config.preferences.log_directory, dir.path);
+    var logger = new Logger({ dir: dir })
+    prefs.set(config.preferences.log_directory, logger.dir.path);
   }
-
-  // Create logger instance
-  var logger = new Logger({ dir: dir });
 
   var contextPanel = require("panel").Panel({
     width: 128,
@@ -137,7 +147,13 @@ exports.main = function (options, callbacks) {
   });
 
   simple_prefs.on('log.directory', function (aData) {
-    logger.dir = prefs.get(config.preferences.log_directory);
+    try {
+      logger.dir = prefs.get(config.preferences.log_directory);
+    }
+    catch (e) {
+      showNotification('logger_error', e.message, null);
+      prefs.set(config.preferences.log_directory, logger.dir.path);
+    }
   });
 }
 

@@ -5,14 +5,14 @@
 // We have to declare it ourselves because the SDK doesn't export it correctly
 const Cu = Components.utils;
 
+Cu.import('resource://gre/modules/NetUtil.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
-Cu.import("resource://gre/modules/NetUtil.jsm");
 
-const { Cc, Ci } = require("chrome");
-const unload = require("api-utils/unload");
+const { Cc, Ci } = require('chrome');
+const unload = require('api-utils/unload');
 
-const PERMS_DIRECTORY = parseInt("0755", 8);
-const PERMS_FILE = parseInt("0655", 8);
+const PERMS_DIRECTORY = parseInt('0755', 8);
+const PERMS_FILE = parseInt('0655', 8);
 
 function Logger(aOptions) {
   aOptions = aOptions || {};
@@ -21,14 +21,14 @@ function Logger(aOptions) {
   this._active = false;
   this._firstLog = false;
 
-  this.dir = aOptions.dir;
-
   unload.ensure(this, 'unload');
 
+  this.dir = aOptions.dir;
+
   // Converter to create input streams out of strings
-  this._converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"]
+  this._converter = Cc['@mozilla.org/intl/scriptableunicodeconverter']
                     .createInstance(Ci.nsIScriptableUnicodeConverter);
-  this._converter.charset = "UTF-8";
+  this._converter.charset = 'UTF-8';
 }
 
 Logger.prototype = {
@@ -54,29 +54,38 @@ Logger.prototype = {
   },
 
   set dir(aValue) {
-    try {
-      // Check if the value is an instance of nsILocalFile
-      aValue.QueryInterface(Ci.nsILocalFile);
-      this._dir = aValue;
-    }
-    catch (e) {
-      // Otherwise we also support a path
-      if (typeof(aValue) === 'string') {
+    var temp;
+
+    // Check if the value is a string of a path
+    if (typeof(aValue) === 'string') {
+      try {
         let dir = Cc['@mozilla.org/file/local;1']
                   .createInstance(Ci.nsILocalFile);
         dir.initWithPath(aValue);
-        this._dir = dir;
+        temp = dir;
       }
-      else {
+      catch (e) {
+        throw new Error('The selected path is invalid');
+      }
+    }
+    else {
+      try {
+        // Check if the value is an instance of nsILocalFile
+        aValue.QueryInterface(Ci.nsILocalFile);
+        temp = aValue;
+      }
+      catch (e) {
         throw new TypeError('A directory can only be a string of the path ' +
                             'or a nsILocalFile');
       }
     }
 
     // Create the directory if it does not already exist
-    if (!this._dir.exists()) {
-      this._dir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
+    if (!temp.exists()) {
+      temp.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
     }
+
+    this._dir = temp;
   }
 };
 
@@ -86,7 +95,7 @@ Logger.prototype.unload = function Logger_unload() {
 
 Logger.prototype.prepareFile = function Logger_prepareFile() {
   var file = this.dir.clone();
-  file.append(Date.now() + ".log");
+  file.append(Date.now() + '.log');
 
   this._file = file;
   this._firstLog = true;
@@ -112,7 +121,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   //dump(aMessage + '\n');
 
   // Create an output stream to write to file
-  var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+  var foStream = Cc['@mozilla.org/network/file-output-stream;1']
                  .createInstance(Ci.nsIFileOutputStream);
   foStream.init(this._file, 0x02 | 0x08 | 0x10, PERMS_FILE, foStream.DEFER_OPEN);
 
@@ -121,15 +130,15 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   var iStream = this._converter.convertToInputStream(aMessage);
   NetUtil.asyncCopy(iStream, foStream, function (status) {
     if (!Components.isSuccessCode(status)) {
-      var errorMessage = new Error("Error while writing to file: " + status);
+      var errorMessage = new Error('Error while writing to file: ' + status);
       console.error(errorMessage);
     }
 
-    if (typeof(aCallback) === "function") {
+    if (typeof(aCallback) === 'function') {
       aCallback(status);
     }
   });
-}
+};
 
 Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
   if (this.active) {
