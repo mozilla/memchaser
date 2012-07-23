@@ -122,7 +122,10 @@ exports.main = function (options, callbacks) {
     gData.current.memory = aData;
 
     widget.port.emit('update_memory', aData);
-    logger.log(config.application.topic_memory_statistics, aData);
+
+    // Memory statistics aren't pretty useful yet to be logged
+    // See: https://github.com/mozilla/memchaser/issues/106
+    //logger.log(config.application.topic_memory_statistics, aData);
   });
 
   garbage_collector.reporter.on(config.application.topic_gc_statistics, function (aData) {

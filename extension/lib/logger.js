@@ -99,7 +99,7 @@ Logger.prototype.prepareFile = function Logger_prepareFile() {
 
   this._file = file;
   this._firstLog = true;
-  this._writeAsync('[' + '\r\n');
+  this._writeAsync('[');
 };
 
 Logger.prototype.start = function Logger_start() {
@@ -148,10 +148,9 @@ Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
       this._firstLog = false;
     }
     else {
-      message = ',' + message;
+      message = ',' + '\r\n' + message;
     }
 
-    message =  message +  '\r\n';
     this._writeAsync(message, aCallback);
   }
 };
