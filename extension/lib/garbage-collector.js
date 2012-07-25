@@ -19,10 +19,11 @@ const unload = require("api-utils/unload");
 const config = require("config");
 
 
-var pref_gc_notifications;
-
-
 const reporter = EventEmitter.compose({
+  _pref_gc_notifications: null,
+
+  get pref_gc_notifications() this._pref_gc_notifications,
+
   constructor: function Reporter() {
     // Report unhandled errors from listeners
     this.on("error", console.exception.bind(console));
@@ -31,14 +32,14 @@ const reporter = EventEmitter.compose({
     unload.ensure(this, 'unload');
 
     if (config.application.branch >= 16) {
-      pref_gc_notifications = config.preferences.memory_notify;
+      this._pref_gc_notifications = config.preferences.memory_notify;
     }
     else {
-      pref_gc_notifications = config.preferences.memory_log;
+      this._pref_gc_notifications = config.preferences.memory_log;
     }
 
     // Ensure GC/CC observer and console messages preference is enabled
-    this._isEnabled = prefs.get(pref_gc_notifications);
+    this._isEnabled = prefs.get(this._pref_gc_notifications);
     if (!this._isEnabled)
       this._enable();
 
@@ -78,11 +79,11 @@ const reporter = EventEmitter.compose({
   _enable: function Reporter__enable() {
     var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
                                              "{}"));
-    if (!modifiedPrefs.hasOwnProperty(pref_gc_notifications)) {
-      modifiedPrefs[pref_gc_notifications] = prefs.get(pref_gc_notifications);
+    if (!modifiedPrefs.hasOwnProperty(this._pref_gc_notifications)) {
+      modifiedPrefs[this._pref_gc_notifications] = prefs.get(this._pref_gc_notifications);
     }
 
-    prefs.set(pref_gc_notifications, true);
+    prefs.set(this._pref_gc_notifications, true);
     prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
@@ -166,8 +167,6 @@ var doGlobalGC = function () {
   Services.obs.notifyObservers(null, "child-gc-request", null);
 }
 
-
-exports.pref_gc_notifications = pref_gc_notifications;
 
 exports.reporter = reporter;
 
