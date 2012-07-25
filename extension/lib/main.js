@@ -4,12 +4,7 @@
 
 "use strict";
 
-// We have to declare it ourselves because the SDK doesn't export it correctly
-const Cu = Components.utils;
-
-Cu.import('resource://gre/modules/Services.jsm');
-
-const { Cc, Ci } = require("chrome");
+const { Cc, Ci, Cu, CC } = require("chrome");
 const events = require("events");
 const prefs = require("api-utils/preferences-service");
 const self = require("self");
@@ -20,6 +15,8 @@ const config = require("config");
 const garbage_collector = require("garbage-collector");
 const { Logger } = require("logger");
 var memory = require("memory");
+
+Cu.import('resource://gre/modules/Services.jsm');
 
 var gData = {
   current: {},
@@ -58,7 +55,7 @@ exports.main = function (options, callbacks) {
     switch (data.type) {
       case "log_folder":
         // Show the memchaser directory.
-        let nsLocalFile = Components.Constructor("@mozilla.org/file/local;1",
+        let nsLocalFile = CC("@mozilla.org/file/local;1",
                                                  "nsILocalFile", "initWithPath");
         new nsLocalFile(logger.dir.path).reveal();
         break;

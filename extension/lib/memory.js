@@ -4,14 +4,7 @@
 
 "use strict";
 
-// We have to declare it ourselves because the SDK doesn't export it correctly
-const Cu = Components.utils;
-
-
-Cu.import('resource://gre/modules/Services.jsm');
-
-
-const {Cc, Ci} = require("chrome");
+const { Cc, Ci, Cu } = require("chrome");
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const self = require("self");
@@ -20,6 +13,7 @@ const unload = require("api-utils/unload");
 
 const config = require("config");
 
+Cu.import('resource://gre/modules/Services.jsm');
 
 var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
              .getService(Ci.nsIMemoryReporterManager);
