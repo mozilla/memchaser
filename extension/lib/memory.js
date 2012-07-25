@@ -5,9 +5,6 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-
-const { Services } = Cu.import('resource://gre/modules/Services.jsm');
-
 const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const self = require("self");
@@ -16,6 +13,7 @@ const unload = require("api-utils/unload");
 
 const config = require("config");
 
+Cu.import('resource://gre/modules/Services.jsm');
 
 var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
              .getService(Ci.nsIMemoryReporterManager);
