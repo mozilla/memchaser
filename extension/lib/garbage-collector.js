@@ -22,8 +22,6 @@ const config = require("config");
 const reporter = EventEmitter.compose({
   _pref_gc_notifications: null,
 
-  get pref_gc_notifications() this._pref_gc_notifications,
-
   constructor: function Reporter() {
     // Report unhandled errors from listeners
     this.on("error", console.exception.bind(console));
@@ -63,6 +61,10 @@ const reporter = EventEmitter.compose({
     else {
       Services.console.registerListener(this);
     }
+  },
+
+  get pref_gc_notifications() {
+    return this._pref_gc_notifications;
   },
 
   unload: function Reporter_unload() {
