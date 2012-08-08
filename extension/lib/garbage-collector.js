@@ -82,7 +82,11 @@ const reporter = EventEmitter.compose({
     let type = aTopic;
 
     if (config.application.branch >= 14) {
-      data = JSON.parse(aData);
+      try {
+        data = JSON.parse(aData);
+      } catch (e) {
+        Cu.reportError("Failure parsing JSON data: " + aData);
+      }
 
       // Use milliseconds instead of microseconds for the timestamp
       if ('timestamp' in data) {
