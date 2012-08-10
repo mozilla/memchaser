@@ -14,6 +14,8 @@ const config = require("config");
 Cu.import('resource://gre/modules/Services.jsm');
 
 const reporter = EventEmitter.compose({
+  _pref_gc_notifications: null,
+
   constructor: function Reporter() {
     // Report unhandled errors from listeners
     this.on("error", console.exception.bind(console));
@@ -21,9 +23,15 @@ const reporter = EventEmitter.compose({
     // Make sure we clean-up correctly
     unload.ensure(this, 'unload');
 
-    // For now the logger preference has to be enabled to be able to
-    // parse the GC / CC information from the console service messages
-    this._isEnabled = prefs.get(config.preferences.memory_log);
+    if (config.application.branch >= 16) {
+      this._pref_gc_notifications = config.preferences.memory_notify;
+    }
+    else {
+      this._pref_gc_notifications = config.preferences.memory_log;
+    }
+
+    // Ensure GC/CC observer and console messages preference is enabled
+    this._isEnabled = prefs.get(this._pref_gc_notifications);
     if (!this._isEnabled)
       this._enable();
 
@@ -49,6 +57,10 @@ const reporter = EventEmitter.compose({
     }
   },
 
+  get pref_gc_notifications() {
+    return this._pref_gc_notifications;
+  },
+
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
@@ -61,15 +73,13 @@ const reporter = EventEmitter.compose({
   },
 
   _enable: function Reporter__enable() {
-    let logging_pref= config.preferences.memory_log;
-
     var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
                                              "{}"));
-    if (!modifiedPrefs.hasOwnProperty(logging_pref)) {
-      modifiedPrefs[logging_pref] = prefs.get(logging_pref);
+    if (!modifiedPrefs.hasOwnProperty(this._pref_gc_notifications)) {
+      modifiedPrefs[this._pref_gc_notifications] = prefs.get(this._pref_gc_notifications);
     }
 
-    prefs.set(logging_pref, true);
+    prefs.set(this._pref_gc_notifications, true);
     prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
     this._isEnabled = true;
   },
