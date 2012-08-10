@@ -35,26 +35,8 @@ const reporter = EventEmitter.compose({
     if (!this._isEnabled)
       this._enable();
 
-    // When we have to parse console messages find the right data
-    switch (config.application.branch) {
-      case 10:
-        this._collector_data = config.extension.gc_app_data["10"];
-        break;
-      case 11:
-      case 12:
-        this._collector_data = config.extension.gc_app_data["11"];
-        break;
-      default:
-        this._collector_data = config.extension.gc_app_data["13"];
-    }
-
-    if (config.application.branch >= 14) {
-      Services.obs.addObserver(this, config.application.topic_cc_statistics, false);
-      Services.obs.addObserver(this, config.application.topic_gc_statistics, false);
-    }
-    else {
-      Services.console.registerListener(this);
-    }
+    Services.obs.addObserver(this, config.application.topic_cc_statistics, false);
+    Services.obs.addObserver(this, config.application.topic_gc_statistics, false);
   },
 
   get pref_gc_notifications() {
@@ -64,12 +46,8 @@ const reporter = EventEmitter.compose({
   unload: function Reporter_unload() {
     this._removeAllListeners();
 
-    if (config.application.branch >= 14) {
-      Services.obs.removeObserver(this, config.application.topic_cc_statistics, false);
-      Services.obs.removeObserver(this, config.application.topic_gc_statistics, false);
-    } else {
-      Services.console.unregisterListener(this);
-    }
+    Services.obs.removeObserver(this, config.application.topic_cc_statistics, false);
+    Services.obs.removeObserver(this, config.application.topic_gc_statistics, false);
   },
 
   _enable: function Reporter__enable() {
@@ -91,54 +69,17 @@ const reporter = EventEmitter.compose({
     let data = { };
     let type = aTopic;
 
-    if (config.application.branch >= 14) {
-      data = JSON.parse(aData);
+    data = JSON.parse(aData);
 
-      // Use milliseconds instead of microseconds for the timestamp
-      if ('timestamp' in data) {
-        data['timestamp'] = Math.round(data['timestamp'] / 1000);
-      }
-    }
-    else {
-      // If it's not a GC/CC message return immediately
-      var sections = /^(CC|GC)/i.exec(aSubject.message);
-      if (sections === null)
-        return;
-
-      type = (sections[1].toLowerCase() === "cc") ? config.application.topic_cc_statistics
-                                                  : config.application.topic_gc_statistics;
-      data = this.parseConsoleMessage(sections[1].toLowerCase(), aSubject.message);
+    // Use milliseconds instead of microseconds for the timestamp
+    if ('timestamp' in data) {
+      data['timestamp'] = Math.round(data['timestamp'] / 1000);
     }
 
     // Once the console listener can be removed, we can emit directly
     require("timer").setTimeout(function (aScope) {
       aScope._emit(type, data);
     }, 0, this);
-  },
-
-  /**
-   * Parse the console message for all wanted entries
-   */
-  parseConsoleMessage : function Reporter_parseConsoleMessage(aType, aMessage) {
-    /**
-     * Inline function to retrieve the value for a given key
-     */
-    function getValueFor(aKey, aRegex) {
-      var regexp = new RegExp(aKey + ":" + aRegex, "i");
-      var matches = regexp.exec(aMessage);
-
-      return matches ? matches[1] : undefined;
-    }
-
-    let data = {
-      timestamp: Date.now()
-    };
-
-    this._collector_data[aType].forEach(function (aEntry) {
-      data[aEntry.label] = getValueFor(aEntry.label, aEntry.regex)
-    });
-
-    return data;
   }
 })();
 
