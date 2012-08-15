@@ -1,5 +1,8 @@
-0.4 / 2012-08-07
+0.4 / 2012-08-15
 ==================
+  * Remove code for Firefox versions <13 because we don't support those anymore (#150)
+  * Bump version of Addon SDK to 1.9 (#147)
+  * Catch exception if JSON data cannot be parsed (#148)
   * Use memory.notify rather than memory.log for Firefox 16 and above (#141)
   * Upgrade to Addon SDK 1.8.1 again. Now finally (#145)
   * Fix usages of Cu.import to better match jetpack conventions (#143)
