@@ -56,7 +56,7 @@ exports.main = function (options, callbacks) {
       case "log_folder":
         // Show the memchaser directory.
         let nsLocalFile = CC("@mozilla.org/file/local;1",
-                                                 "nsILocalFile", "initWithPath");
+                             "nsILocalFile", "initWithPath");
         new nsLocalFile(logger.dir.path).reveal();
         break;
       case "logger_status":
