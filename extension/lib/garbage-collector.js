@@ -69,17 +69,15 @@ const reporter = EventEmitter.compose({
     let data = { };
     let type = aTopic;
 
-    if (config.application.branch >= 14) {
-      try {
-        data = JSON.parse(aData);
-      } catch (e) {
-        Cu.reportError("Failure parsing JSON data: " + aData);
-      }
+    try {
+      data = JSON.parse(aData);
+    } catch (e) {
+      Cu.reportError("Failure parsing JSON data: " + aData);
+    }
 
     // Use milliseconds instead of microseconds for the timestamp
-    if ('timestamp' in data) {
+    if ('timestamp' in data)
       data['timestamp'] = Math.round(data['timestamp'] / 1000);
-    }
 
     // Once the console listener can be removed, we can emit directly
     require("timer").setTimeout(function (aScope) {
