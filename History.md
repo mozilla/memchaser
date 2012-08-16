@@ -1,3 +1,19 @@
+0.4 / 2012-08-16
+==================
+  * Fix the error "Exposing chrome JS objects to content without __exposedProps__ is insecure and deprecated." (#151)
+  * Remove code for Firefox versions <13 because we don't support those anymore (#150)
+  * Bump version of Addon SDK to 1.9 (#147)
+  * Catch exception if JSON data cannot be parsed (#148)
+  * Use memory.notify rather than memory.log for Firefox 16 and above (#141)
+  * Upgrade to Addon SDK 1.8.1 again. Now finally (#145)
+  * Fix usages of Cu.import to better match jetpack conventions (#143)
+  * Text in Add-on Bar unreadable with dark Personas (#62)
+  * Updated Addons SDK to 1.8.1 (#142)
+  * Fixes directories not persisting after restart (#131)
+  * Update .travic.yml to send IRC notifications (#123)
+  * Do not log memory statistics because they are not pretty useful right now (#130)
+  * Lines in log file now end with a comma (#127)
+
 0.3 / 2012-04-04
 ==================
   * Allow user to specify where logs are saved (#119)
