@@ -1,5 +1,6 @@
 0.4 / 2012-08-16
 ==================
+  * Fix the error "Exposing chrome JS objects to content without __exposedProps__ is insecure and deprecated." (#151)
   * Remove code for Firefox versions <13 because we don't support those anymore (#150)
   * Bump version of Addon SDK to 1.9 (#147)
   * Catch exception if JSON data cannot be parsed (#148)
