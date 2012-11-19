@@ -7,7 +7,7 @@
         "Dave Hunt <dave.hunt@gmail.com> (http://www.blargon7.com)",
         "Andrew Petersen <senofpeter@gmail.com> (http://github.com/kirbysayshi)"
     ],
-    "version": "0.5pre",
+    "version": "0.5",
     "fullName": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",
