@@ -1,5 +1,11 @@
+0.5 / 2012-11-19
+==================
+
+  * Switch to AddonSDK release branch [1.11] (#154)
+
 0.4 / 2012-08-16
 ==================
+
   * Fix the error "Exposing chrome JS objects to content without __exposedProps__ is insecure and deprecated." (#151)
   * Remove code for Firefox versions <13 because we don't support those anymore (#150)
   * Bump version of Addon SDK to 1.9 (#147)
@@ -16,6 +22,7 @@
 
 0.3 / 2012-04-04
 ==================
+
   * Allow user to specify where logs are saved (#119)
   * Add panel options to access log folder and start/stop logging (#115)
   * Add panel items for triggering a GC or CC, and Minimize Memory Usage (#114, #118)
