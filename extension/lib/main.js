@@ -5,11 +5,11 @@
 "use strict";
 
 const { Cc, Ci, Cu, CC } = require("chrome");
-const events = require("events");
-const prefs = require("api-utils/preferences-service");
+const events = require("sdk/deprecated/events");
+const prefs = require("sdk/preferences/service");
 const self = require("self");
-const simple_prefs = require("simple-prefs");
-const widgets = require("widget");
+const simple_prefs = require("sdk/simple-prefs");
+const widgets = require("sdk/widget");
 
 const config = require("./config");
 const garbage_collector = require("./garbage-collector");

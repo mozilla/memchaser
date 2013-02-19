@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { components, Cc, Ci, Cu } = require("chrome");
-const unload = require("api-utils/unload");
+const unload = require("sdk/system/unload");
 
 Cu.import('resource://gre/modules/NetUtil.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
