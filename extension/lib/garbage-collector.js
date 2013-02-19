@@ -5,11 +5,11 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { EventEmitter } = require("api-utils/events");
-const prefs = require("api-utils/preferences-service");
-const unload = require("api-utils/unload");
+const { EventEmitter } = require("sdk/deprecated/events");
+const prefs = require("sdk/preferences/service");
+const unload = require("sdk/system/unload");
 
-const config = require("config");
+const config = require("./config");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
