@@ -11,10 +11,10 @@ const self = require("self");
 const simple_prefs = require("simple-prefs");
 const widgets = require("widget");
 
-const config = require("config");
-const garbage_collector = require("garbage-collector");
-const { Logger } = require("logger");
-var memory = require("memory");
+const config = require("./config");
+const garbage_collector = require("./garbage-collector");
+const { Logger } = require("./logger");
+var memory = require("./memory");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
