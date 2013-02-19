@@ -11,7 +11,7 @@ const self = require("self");
 const timer = require("api-utils/timer");
 const unload = require("api-utils/unload");
 
-const config = require("config");
+const config = require("./config");
 
 Cu.import('resource://gre/modules/Services.jsm');
 

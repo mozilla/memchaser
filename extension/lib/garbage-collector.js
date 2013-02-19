@@ -9,7 +9,7 @@ const { EventEmitter } = require("api-utils/events");
 const prefs = require("api-utils/preferences-service");
 const unload = require("api-utils/unload");
 
-const config = require("config");
+const config = require("./config");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
