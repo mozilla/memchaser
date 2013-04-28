@@ -53,7 +53,7 @@
     <delete file="${build.filename}"/>
     <exec executable="/bin/sh" dir="addon-sdk">
       <arg value="-c"/>
-      <arg value="source bin/activate;cd ../extension;cfx xpi"/>
+      <arg value=". bin/activate;cd ../extension;cfx xpi"/>
     </exec>
     <echo>build.filename: ${build.filename}</echo>
   </target>
@@ -61,7 +61,7 @@
   <target name="run">
     <exec executable="/bin/sh" dir="addon-sdk">
       <arg value="-c"/>
-      <arg value="source bin/activate;cd ../extension;cfx run ${cfx.binary}"/>
+      <arg value=". bin/activate;cd ../extension;cfx run ${cfx.binary}"/>
     </exec>
   </target>
 
@@ -70,7 +70,7 @@
           dir="addon-sdk"
           resultproperty="test.result">
       <arg value="-c"/>
-      <arg value="source bin/activate;cd ../extension;cfx test ${cfx.binary}"/>
+      <arg value=". bin/activate;cd ../extension;cfx test ${cfx.binary}"/>
     </exec>
     <fail message="Tests failed!">
       <condition>
