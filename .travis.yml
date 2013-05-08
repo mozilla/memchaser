@@ -1,8 +1,5 @@
 language: java
 
-before_install:
- - git submodule update --init
-
 before_script:
  - sh -e /etc/init.d/xvfb start
 
