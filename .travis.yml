@@ -1,10 +1,14 @@
-language: java
+language: node_js
 
 before_script:
  - sh -e /etc/init.d/xvfb start
 
+install: ant
+
 env:
  - DISPLAY=':99.0'
+
+script: ant test
 
 notifications:
   irc:
