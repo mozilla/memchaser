@@ -2,15 +2,13 @@ language: node_js
 
 before_script:
  - sh -e /etc/init.d/xvfb start
- - git submodule update --init 
- - cd addon-sdk
- - . bin/activate
- - cd ../extension
+
+install: ant
 
 env:
  - DISPLAY=':99.0'
 
-script: cfx test
+script: ant test
 
 notifications:
   irc:
