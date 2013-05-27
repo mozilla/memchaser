@@ -80,7 +80,7 @@ const reporter = EventEmitter.compose({
       data['timestamp'] = Math.round(data['timestamp'] / 1000);
 
     // Once the console listener can be removed, we can emit directly
-    require("timer").setTimeout(function (aScope) {
+    require("sdk/timers").setTimeout(function (aScope) {
       aScope._emit(type, data);
     }, 0, this);
   }
