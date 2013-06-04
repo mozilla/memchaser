@@ -10,6 +10,7 @@ const prefs = require("sdk/preferences/service");
 const self = require("sdk/self");
 const simple_prefs = require("sdk/simple-prefs");
 const widgets = require("sdk/widget");
+const panel = require("sdk/panel");
 
 const config = require("./config");
 const garbage_collector = require("./garbage-collector");
@@ -40,7 +41,7 @@ exports.main = function (options, callbacks) {
   // Create logger instance
   var logger = new Logger({ dir: dir });
 
-  var contextPanel = require("sdk/panel").Panel({
+  var contextPanel = panel.Panel({
     width: 128,
     height: 107,
     contentURL: [self.data.url("panel/context.html")],

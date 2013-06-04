@@ -8,6 +8,7 @@ const { Cc, Ci, Cu } = require("chrome");
 const { EventEmitter } = require("sdk/deprecated/events");
 const prefs = require("sdk/preferences/service");
 const unload = require("sdk/system/unload");
+const timers = require("sdk/timers");
 
 const config = require("./config");
 
@@ -80,7 +81,7 @@ const reporter = EventEmitter.compose({
       data['timestamp'] = Math.round(data['timestamp'] / 1000);
 
     // Once the console listener can be removed, we can emit directly
-    require("sdk/timers").setTimeout(function (aScope) {
+    timers.setTimeout(function (aScope) {
       aScope._emit(type, data);
     }, 0, this);
   }
