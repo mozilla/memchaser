@@ -6,11 +6,11 @@
 
 const { Cc, Ci, Cu, CC } = require("chrome");
 const events = require("sdk/deprecated/events");
+const panel = require("sdk/panel");
 const prefs = require("sdk/preferences/service");
 const self = require("sdk/self");
 const simple_prefs = require("sdk/simple-prefs");
 const widgets = require("sdk/widget");
-const panel = require("sdk/panel");
 
 const config = require("./config");
 const garbage_collector = require("./garbage-collector");

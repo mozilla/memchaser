@@ -7,8 +7,8 @@
 const { Cc, Ci, Cu } = require("chrome");
 const { EventEmitter } = require("sdk/deprecated/events");
 const prefs = require("sdk/preferences/service");
-const unload = require("sdk/system/unload");
 const timers = require("sdk/timers");
+const unload = require("sdk/system/unload");
 
 const config = require("./config");
 
