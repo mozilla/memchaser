@@ -5,8 +5,8 @@
 "use strict";
 
 
-const self = require('self');
-const xulapp = require('xul-app');
+const self = require('sdk/self');
+const xulapp = require('sdk/system/xul-app');
 
 
 /**
