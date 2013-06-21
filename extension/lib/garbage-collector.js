@@ -5,10 +5,9 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { EventEmitter } = require("sdk/deprecated/events");
-const prefs = require("sdk/preferences/service");
-const timers = require("sdk/timers");
-const unload = require("sdk/system/unload");
+const { EventEmitter } = require("api-utils/events");
+const prefs = require("api-utils/preferences-service");
+const unload = require("api-utils/unload");
 
 const config = require("./config");
 
@@ -81,7 +80,7 @@ const reporter = EventEmitter.compose({
       data['timestamp'] = Math.round(data['timestamp'] / 1000);
 
     // Once the console listener can be removed, we can emit directly
-    timers.setTimeout(function (aScope) {
+    require("timer").setTimeout(function (aScope) {
       aScope._emit(type, data);
     }, 0, this);
   }

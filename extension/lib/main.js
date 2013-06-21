@@ -5,12 +5,11 @@
 "use strict";
 
 const { Cc, Ci, Cu, CC } = require("chrome");
-const events = require("sdk/deprecated/events");
-const panel = require("sdk/panel");
-const prefs = require("sdk/preferences/service");
-const self = require("sdk/self");
-const simple_prefs = require("sdk/simple-prefs");
-const widgets = require("sdk/widget");
+const events = require("events");
+const prefs = require("api-utils/preferences-service");
+const self = require("self");
+const simple_prefs = require("simple-prefs");
+const widgets = require("widget");
 
 const config = require("./config");
 const garbage_collector = require("./garbage-collector");
@@ -41,7 +40,7 @@ exports.main = function (options, callbacks) {
   // Create logger instance
   var logger = new Logger({ dir: dir });
 
-  var contextPanel = panel.Panel({
+  var contextPanel = require("panel").Panel({
     width: 128,
     height: 107,
     contentURL: [self.data.url("panel/context.html")],
