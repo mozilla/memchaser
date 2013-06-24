@@ -1,6 +1,6 @@
 const { Cc, Ci, Cu } = require("chrome");
 
-const { Logger } = require("memchaser/logger");
+const { Logger } = require("./logger");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
