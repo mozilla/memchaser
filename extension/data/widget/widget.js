@@ -8,7 +8,7 @@ const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
 
   elements.forEach(function (element) {
     element.onmouseover = function () {
-      self.port.emit("update_tooltip", this.dataset.tooltip);
+      self.postMessage({ type: "update_tooltip", data: this.dataset.tooltip });
     };
   });
 
@@ -127,30 +127,32 @@ var updateCollector = function (aType, aData) {
 }
 
 
-self.port.on("update_memory", function (data) {
-  hideInitText();
+self.on("message", function (aMessage) {
+  let { type, data } = aMessage;
 
-  // Update widget with current memory usage
-  ["resident"].forEach(function (aType) {
-    if (data[aType]) {
-      let element = document.querySelector("#" + aType + " .data");
-      element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE) + "MB";
-    }
-  });
-});
+  switch (type) {
+    case "update_cycle_collector":
+      updateCollector('cc', data);
+      break;
 
+    case "update_garbage_collector":
+      updateCollector('gc', data);
+      break;
 
-self.port.on('update_cycle_collector', function (aData) {
-  updateCollector('cc', aData);
-});
+    case "update_logger":
+      let logger = document.getElementById("logger");
+      logger.className = (data["active"]) ? "enabled" : "disabled";
+      break;
+    case "update_memory":
+      hideInitText();
 
-
-self.port.on("update_garbage_collector", function (aData) {
-  updateCollector('gc', aData);
-});
-
-
-self.port.on("update_logger", function (data) {
-  let logger = document.getElementById("logger");
-  logger.className = (data["active"]) ? "enabled" : "disabled";
+      // Update widget with current memory usage
+      ["resident"].forEach(function (aType) {
+        if (data[aType]) {
+          let element = document.querySelector("#" + aType + " .data");
+          element.textContent = Math.round(data[aType] * BYTE_TO_MEGABYTE) + "MB";
+        }
+      });
+      break;
+  }
 });

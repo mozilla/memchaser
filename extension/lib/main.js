@@ -49,31 +49,36 @@ exports.main = function (options, callbacks) {
     contentScriptWhen: "ready"
   });
 
-  // If user clicks a panel entry the appropriate command has to be executed
-  contextPanel.port.on("command", function (data) {
-    contextPanel.hide();
+  contextPanel.on("message", function (aMessage) {
+    let { type, data } = aMessage;
+    switch (type) {
+      // If user clicks a panel entry the appropriate command has to be executed
+      case "command": 
+        contextPanel.hide();
 
-    switch (data.type) {
-      case "log_folder":
-        // Show the memchaser directory.
-        let nsLocalFile = CC("@mozilla.org/file/local;1",
-                             "nsILocalFile", "initWithPath");
-        new nsLocalFile(logger.dir.path).reveal();
-        break;
-      case "logger_status":
-        logger.active = !logger.active;
-        widget.port.emit("update_logger", { "active": logger.active });
-        break;
-      case "minimize_memory":
-        memory.minimizeMemory(memory.reporter.retrieveStatistics);
-        break;
-      case "trigger_cc":
-        garbage_collector.doCC();
-        memory.reporter.retrieveStatistics();
-        break;
-      case "trigger_gc":
-        garbage_collector.doGlobalGC();
-        memory.reporter.retrieveStatistics();
+        switch (data) {
+          // Show the memchaser directory.
+          case "log_folder":
+            let nsLocalFile = CC("@mozilla.org/file/local;1",
+                                "nsILocalFile", "initWithPath");
+            new nsLocalFile(logger.dir.path).reveal();
+            break;
+          case "logger_status":
+            logger.active = !logger.active;
+            widget.postMessage({ type: "update_logger", data: { "active": logger.active } });
+            break;
+          case "minimize_memory":
+            memory.minimizeMemory(memory.reporter.retrieveStatistics);
+            break;
+          case "trigger_cc":
+            garbage_collector.doCC();
+            memory.reporter.retrieveStatistics();
+            break;
+          case "trigger_gc":
+            garbage_collector.doGlobalGC();
+            memory.reporter.retrieveStatistics();
+            break;
+        }
         break;
     }
   });
@@ -88,20 +93,26 @@ exports.main = function (options, callbacks) {
     panel: contextPanel,
     width: 360,
     onClick: function () {
-      contextPanel.port.emit("update", { logger_active: logger.active });
+      contextPanel.postMessage({ type: "update", data: { logger_active: logger.active }});
     }
   });
 
-  // If user hovers over an entry the tooltip has to be updated
-  widget.port.on("update_tooltip", function (data) {
-    if (data === "logger" && logger.active) {
-      data = "logger_enabled";
-    }
-    else if (data === "logger") {
-      data = "logger_disabled";
-    }
 
-    widget.tooltip = config.extension.widget_tooltips[data];
+  widget.on("message", function (aMessage) {
+    let { type, data } = aMessage;
+    switch (type) {
+      // If user hovers over an entry the tooltip has to be updated
+      case "update_tooltip":
+        if (data === "logger" && logger.active) {
+          data = "logger_enabled";
+        }
+        else if (data === "logger") {
+          data = "logger_disabled";
+        }
+
+        widget.tooltip = config.extension.widget_tooltips[data];
+        break;
+    }
   });
 
   memory.reporter.on(config.application.topic_memory_statistics, function (aData) {
@@ -109,7 +120,7 @@ exports.main = function (options, callbacks) {
       gData.previous.memory = gData.current.memory;
     gData.current.memory = aData;
 
-    widget.port.emit('update_memory', aData);
+    widget.postMessage({ type: "update_memory", data: aData });
 
     // Memory statistics aren't pretty useful yet to be logged
     // See: https://github.com/mozilla/memchaser/issues/106
@@ -121,7 +132,7 @@ exports.main = function (options, callbacks) {
       gData.previous.gc = gData.current.gc;
     gData.current.gc = aData;
 
-    widget.port.emit('update_garbage_collector', gData);
+    widget.postMessage({ type: "update_garbage_collector", data: gData });
     logger.log(config.application.topic_gc_statistics, aData);
   });
 
@@ -130,7 +141,7 @@ exports.main = function (options, callbacks) {
       gData.previous.cc = gData.current.cc;
     gData.current.cc = aData;
 
-    widget.port.emit('update_cycle_collector', gData);
+    widget.postMessage({ type: "update_cycle_collector", data: gData });
     logger.log(config.application.topic_cc_statistics, aData);
   });
 
