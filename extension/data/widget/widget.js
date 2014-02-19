@@ -71,7 +71,6 @@ var isIncrementalGC = function (aEntry) {
  * Check if the CC entry is an incremental CC
  */
 var isIncrementalCC = function (aEntry) {
-
   if ('total_slice_pause' in aEntry) {
     return aEntry['total_slice_pause'] < aEntry['duration'];
   }
