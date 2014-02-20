@@ -24,7 +24,7 @@ const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
  * Get the duration of the given GC or CC entry
  */
 var getDuration = function (aEntry) {
-  let keys = ['duration',
+  let keys = ['max_slice_pause', 'duration',
               'MaxPause', 'max_pause',
               'Total', 'TotalTime', 'total_time'];
 
@@ -67,6 +67,30 @@ var isIncrementalGC = function (aEntry) {
   return false;
 }
 
+/**
+ * Check if the CC entry is an incremental CC
+ */
+var isIncrementalCC = function (aEntry) {
+  if ('total_slice_pause' in aEntry) {
+    return aEntry['total_slice_pause'] < aEntry['duration'];
+  }
+
+  return false;
+}
+
+var isIncrementalCollection = function (aType, aEntry) {
+  switch (aType) {
+    case "gc":
+      return isIncrementalGC(aEntry);
+      break;
+    case "cc":
+      return isIncrementalCC(aEntry);
+      break;
+  }
+
+  return false;
+}
+
 
 /**
  * Update the values of the specified collector
@@ -96,12 +120,9 @@ var updateCollector = function (aType, aData) {
   let elem_age = document.querySelector('#' + aType + ' .age');
   elem_age.textContent = (age === undefined) ? '' : ' (' + age.toFixed(1) + 's)';
 
-  // Garbage collector specific values
-  if (aType === 'gc') {
-    var elem_label = document.querySelector('#' + aType + ' .label');
-    elem_label.textContent = isIncrementalGC(aData['current'][aType]) ? 'iGC: '
-                                                                      : 'GC: ';
-  }
+  var elem_label = document.querySelector('#' + aType + ' .label');
+  elem_label.textContent = (isIncrementalCollection(aType, aData['current'][aType]) ? 'i': '')
+                          + aType.toUpperCase() + ': ';
 
 }
 
