@@ -3,16 +3,20 @@
 
   elements.forEach(function (element) {
     element.onclick = function () {
-      self.port.emit("command", { type: this.dataset.action});
+      self.postMessage({ type: "command", data: this.dataset.action });
     };
   });
 })();
 
 
-self.port.on("update", function (aData) {
-  let data = aData || { };
+self.on("message", function (aMessage) {
+  let { type, data } = aMessage;
+  switch (type) {
+    case "update":
 
-  var logger_status = document.querySelector("#logger_status");
-  var action = (aData.logger_active) ? "Stop " : "Start ";
-  logger_status.textContent = action + "Logging";
+      var logger_status = document.querySelector("#logger_status");
+      var action = (data.logger_active) ? "Stop " : "Start ";
+      logger_status.textContent = action + "Logging";
+      break;
+  }
 });
