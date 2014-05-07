@@ -46,7 +46,7 @@ const reporter = EventEmitter.compose({
     var data = {
       timestamp:  Date.now(),
       //explicit: memSrv.explicit,
-      resident: memSrv.resident
+      resident: memSrv.residentFast
     }
 
     this._emit(config.application.topic_memory_statistics, data);
