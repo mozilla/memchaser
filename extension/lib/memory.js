@@ -82,6 +82,8 @@ var minimizeMemory = function (aCallback) {
     }
   }
 
+  Services.obs.notifyObservers(null, "child-mmu-request", null);
+
   sendHeapMinNotificationsInner();
 }
 
