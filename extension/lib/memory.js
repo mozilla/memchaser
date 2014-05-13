@@ -55,36 +55,9 @@ const reporter = EventEmitter.compose({
 })();
 
 
-/**
- * For maximum effect, this returns to the event loop between each
- * notification.  See bug 610166 comment 12 for an explanation.
- * Ideally a single notification would be enough.
- *
- * Code borrowed from:
- *   http://mxr.mozilla.org/mozilla-central/ident?i=minimizeMemoryUsage3x
- */
 var minimizeMemory = function (aCallback) {
-  let i = 0;
-
-  function runSoon(aCallback) {
-    Services.tm.mainThread.dispatch({ run: aCallback },
-                                    Ci.nsIThread.DISPATCH_NORMAL);
-  }
-
-  function sendHeapMinNotificationsInner() {
-    Services.obs.notifyObservers(null, "memory-pressure", "heap-minimize");
-
-    if (++i < 3) {
-      runSoon(sendHeapMinNotificationsInner);
-    }
-    else if (aCallback) {
-      runSoon(aCallback);
-    }
-  }
-
   Services.obs.notifyObservers(null, "child-mmu-request", null);
-
-  sendHeapMinNotificationsInner();
+  memSrv.minimizeMemoryUsage(aCallback);
 }
 
 
