@@ -44,7 +44,7 @@ exports.main = function (options, callbacks) {
   var contextPanel = panel.Panel({
     width: 128,
     height: 107,
-    contentURL: [self.data.url("panel/context.html")],
+    contentURL: self.data.url("panel/context.html"),
     contentScriptFile: [self.data.url("panel/context.js")],
     contentScriptWhen: "ready"
   });
@@ -87,7 +87,7 @@ exports.main = function (options, callbacks) {
     id: "memchaser-widget",
     label: "MemChaser",
     tooltip: "MemChaser",
-    contentURL: [self.data.url("widget/widget.html")],
+    contentURL: self.data.url("widget/widget.html"),
     contentScriptFile: [self.data.url("widget/widget.js")],
     contentScriptWhen: "ready",
     panel: contextPanel,
