@@ -44,6 +44,7 @@ exports.test_default_to_not_logging = function (test) {
   var logger = new Logger({ dir: dir });
 
   test.assert(!logger.active);
+  test.done();
 }
 
 exports.test_start_stop_logging = function (test) {
@@ -61,8 +62,7 @@ exports.test_start_stop_logging = function (test) {
   logger.active = false;
   test.assert(!logger.active);
 
-  logger._file.remove(false);
-  test.assert(!logger._file.exists(), "Clean-up; delete test file");
+  test.done();
 }
 
 exports.test_log_and_callback = function (test) {
@@ -98,7 +98,7 @@ exports.test_start_directory_change_nsIFile = function (test) {
     test.assertEqual(message[1].data.x, 60);
     test.assertEqual(message[2].data.x, 70);
   }));
-    
+
   test.waitUntilDone(2000);
 }
 
