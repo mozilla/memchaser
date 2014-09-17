@@ -1,13 +1,15 @@
 {
     "name": "memchaser",
     "license": "Mozilla Public License Version 2.0",
-    "author": "Mozilla Automation Development <qa-auto@mozilla.com>",
+    "author": "Firefox Automation Team <dev-automation@lists.mozilla.org>",
     "contributors": [
-        "Henrik Skupin <mail@hskupin.info> (http://www.hskupin.info)",
-        "Dave Hunt <dave.hunt@gmail.com> (http://www.blargon7.com)",
-        "Andrew Petersen <senofpeter@gmail.com> (http://github.com/kirbysayshi)"
+        "Henrik Skupin (http://www.hskupin.info)",
+        "Dave Hunt (http://www.blargon7.com)",
+        "Andrew Petersen (http://github.com/kirbysayshi)",
+        "Szabolcs Hubai",
+        "Uchida Taishi"
     ],
-    "version": "0.5.2",
+    "version": "0.6",
     "fullName": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",

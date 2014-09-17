@@ -1,3 +1,19 @@
+0.6 / 2014-09-17
+================
+
+ * Release memchaser 0.6 (#201)
+ * Fix test_start_stop_logging for 'File not found' error (#199)
+ * contentURL expects a string in Panel() and Widget() constructors (#198)
+ * Bring the minimizeMemory() implementation up to date (#193)
+ * Use 'residentFast' instead of 'resident' for memory reporter (#192)
+ * Use postMessage for widget and panel communication instead port object (#185)
+ * Support incremental cycle collection statistics (#187)
+ * Added a usage section to the README (#178)
+ * Change require statements and update the SDK to 1.14 (#174)
+ * Simplify .travis.yml (#172)
+ * Use . (dot) to include files while invoking /bin/sh (#169)
+ * Use failonerror attribute in exec tasks (#168)
+
 0.5.2 / 2013-02-19
 ==================
 
