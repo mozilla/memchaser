@@ -78,6 +78,9 @@ exports.main = function (options, callbacks) {
             garbage_collector.doGlobalGC();
             memory.reporter.retrieveStatistics();
             break;
+          case "open_readme":
+            window.open("https://github.com/mozilla/memchaser/blob/master/README.md");
+            break;
         }
         break;
     }
