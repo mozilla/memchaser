@@ -2,13 +2,25 @@ language: node_js
 
 before_script:
  - sh -e /etc/init.d/xvfb start
+ - mozdownload $MOZDOWNLOADPARAMS
+ - tar -xf *firefox*.tar.bz2
 
-install: ant
+before_install:
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install -y ant python-pip
+  - sudo pip install mozdownload
 
 env:
  - DISPLAY=':99.0'
+ - MOZDOWNLOADPARAMS = '-t daily'
+ - MOZDOWNLOADPARAMS = '-t release -v latest-beta'
+ - MOZDOWNLOADPARAMS = '-t release -v latest'
+ - MOZDOWNLOADPARAMS = '-t release -v latest-esr'
 
-script: ant test
+script:
+ - ant test -Dbinary=`pwd`/firefox/firefox
 
 notifications:
   irc:
