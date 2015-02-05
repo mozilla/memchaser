@@ -15,6 +15,7 @@ install:
 
 env:
  - MOZDOWNLOADPARAMS='-t daily'
+ - MOZDOWNLOADPARAMS='-t daily --branch=mozilla-aurora'
  - MOZDOWNLOADPARAMS='-t release -v latest-beta'
  - MOZDOWNLOADPARAMS='-t release -v latest'
  - MOZDOWNLOADPARAMS='-t release -v latest-esr'
