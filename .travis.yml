@@ -1,10 +1,10 @@
 language: node_js
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - mozdownload $MOZDOWNLOADPARAMS
- - tar -xf *firefox*.tar.bz2
+env:
+ - MOZDOWNLOADPARAMS='-t daily'
+ - MOZDOWNLOADPARAMS='-t release -v latest-beta'
+ - MOZDOWNLOADPARAMS='-t release -v latest'
+ - MOZDOWNLOADPARAMS='-t release -v latest-esr'
 
 before_install:
   - sudo apt-get update -qq
@@ -13,11 +13,11 @@ install:
   - sudo apt-get install -y ant python-pip
   - sudo pip install mozdownload
 
-env:
- - MOZDOWNLOADPARAMS='-t daily'
- - MOZDOWNLOADPARAMS='-t release -v latest-beta'
- - MOZDOWNLOADPARAMS='-t release -v latest'
- - MOZDOWNLOADPARAMS='-t release -v latest-esr'
+before_script:
+ - export DISPLAY=:99.0
+ - sh -e /etc/init.d/xvfb start
+ - mozdownload $MOZDOWNLOADPARAMS
+ - tar -xf *firefox*.tar.bz2
 
 script:
  - ant test -Dbinary=`pwd`/firefox/firefox
