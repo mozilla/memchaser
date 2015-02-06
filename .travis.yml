@@ -2,7 +2,7 @@ language: node_js
 
 env:
   global:
-    - export DISPLAY=:99.0
+    - DISPLAY=':99.0'
   matrix:
     - MOZDOWNLOADPARAMS='-t daily'
     - MOZDOWNLOADPARAMS='-t daily --branch=mozilla-aurora'
