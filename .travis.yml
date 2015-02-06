@@ -5,6 +5,7 @@ env:
     - export DISPLAY=:99.0
   matrix:
     - MOZDOWNLOADPARAMS='-t daily'
+    - MOZDOWNLOADPARAMS='-t daily --branch=mozilla-aurora'
     - MOZDOWNLOADPARAMS='-t release -v latest-beta'
     - MOZDOWNLOADPARAMS='-t release -v latest'
     - MOZDOWNLOADPARAMS='-t release -v latest-esr'
@@ -17,9 +18,9 @@ install:
   - sudo pip install mozdownload
 
 before_script:
- - sh -e /etc/init.d/xvfb start
- - mozdownload $MOZDOWNLOADPARAMS
- - tar -xf *firefox*.tar.bz2
+  - sh -e /etc/init.d/xvfb start
+  - mozdownload $MOZDOWNLOADPARAMS
+  - tar -xf *firefox*.tar.bz2
 
 script:
- - ant test -Dbinary=`pwd`/firefox/firefox
+  - ant test -Dbinary=`pwd`/firefox/firefox
