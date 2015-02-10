@@ -29,6 +29,6 @@ notifications:
   irc:
     channels:
       - "irc.mozilla.org#automation"
-      on_success: always
-      on_failure: always
-      use_notice: true
+    on_success: always
+    on_failure: always
+    use_notice: true
