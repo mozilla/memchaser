@@ -15,7 +15,7 @@ before_install:
 
 install:
   - sudo apt-get install -y ant python-pip
-  - sudo pip install mozdownload
+  - sudo pip install mozdownload==1.12
 
 before_script:
   - sh -e /etc/init.d/xvfb start
@@ -24,3 +24,11 @@ before_script:
 
 script:
   - ant test -Dbinary=`pwd`/firefox/firefox
+
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#automation"
+      on_success: always
+      on_failure: always
+      use_notice: true
