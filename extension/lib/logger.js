@@ -106,7 +106,11 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
 
   function callback() {
     if (typeof(aCallback) === "function") {
-      aCallback();
+      try {
+        aCallback();
+      } catch (e) {
+        Cu.reportError(e);
+      }
     }
   }
 
@@ -123,7 +127,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
       error => {
         file.close();
         callback();
-    });
+    })
   })
   .then(null, error => {
     // Extract something meaningful from WorkerErrorEvent

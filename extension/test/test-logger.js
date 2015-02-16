@@ -27,7 +27,12 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
     }
     finally {
       istream.close();
-      message = JSON.parse(message);
+      try {
+        message = JSON.parse(message);
+      } catch (e) {
+        Cu.reportError("Invalid JSON string: " + message);
+        throw e;
+      }
 
       if (typeof(testFunc) === 'function') {
         testFunc(message);
