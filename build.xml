@@ -12,6 +12,11 @@
   </condition>
   <property name="cfx.binary" value=""/>
 
+  <condition property="cfx.verbose" value="--verbose">
+      <isset property="verbose"/>
+  </condition>
+  <property name="cfx.verbose" value=""/>
+
   <target name="release" depends="version"
           description="Builds a release version">
     <property name="xpi.filename" value="${ant.project.name}-${build.version}.xpi"/>
@@ -53,7 +58,7 @@
     <delete file="${build.filename}"/>
     <exec executable="/bin/sh" dir="addon-sdk" failonerror="true">
       <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx xpi"/>
+      <arg value=". bin/activate;cd ../extension;cfx ${cfx.verbose} xpi"/>
     </exec>
     <echo>build.filename: ${build.filename}</echo>
   </target>
@@ -61,7 +66,7 @@
   <target name="run">
     <exec executable="/bin/sh" dir="addon-sdk" failonerror="true">
       <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx run ${cfx.binary}"/>
+      <arg value=". bin/activate;cd ../extension;cfx ${cfx.verbose} run ${cfx.binary}"/>
     </exec>
   </target>
 
@@ -71,7 +76,7 @@
           resultproperty="test.result"
           failonerror="true">
       <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx test ${cfx.binary}"/>
+      <arg value=". bin/activate;cd ../extension;cfx --verbose test ${cfx.binary}"/>
     </exec>
     <fail message="Tests failed!">
       <condition>
