@@ -121,3 +121,22 @@ exports.test_start_directory_change_string = function (test) {
 
   test.waitUntilDone(2000);
 }
+
+exports.test_high_speed_logging = function (test) {
+  var logger = new Logger({ dir: dir });
+  logger.start();
+
+  var loopLength = 100;
+  for (var i = 0; i < loopLength; i++) {
+    logger.log('test', { x: i });
+  }
+
+  logger.stop(verifyAsyncOutput(test, logger, function (message) {
+    test.assertEqual(message.length, loopLength);
+    for (var i = 0; i < loopLength; i++) {
+      test.assertEqual(message[i].data.x, i);
+    }
+  }));
+
+  test.waitUntilDone(2000);
+}
