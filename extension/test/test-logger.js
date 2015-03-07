@@ -10,10 +10,11 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
   var message = '';
 
   return function (status) {
-    var line = {}, hasMore;
+    var line = {}, hasMore, isSuccessStatus;
 
-    if (typeof status !== "number") {
-      test.fail(status);
+    isSuccessStatus = typeof status == "number";
+    test.assert(isSuccessStatus, status);
+    if (!isSuccessStatus) {
       return;
     }
 

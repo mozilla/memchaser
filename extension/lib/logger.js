@@ -110,19 +110,19 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   }
 
   let array = this._encoder.encode(aMessage);
-  let promise = OS.File.open(this.file.path, {write: true}).then(file => {
-    file.setPosition(0, OS.File.POS_END)
-    .then(file.write(array))
+  let promise = OS.File.open(this.file.path, {write: true, append: true})
+  .then(file => {
+    file.write(array)
     .then(bytes => {
-        file.close();
-        callback(bytes);
-      },
-      error => {
-        file.close();
-        callback(error);
+      file.close();
+      callback(bytes);
+    },
+    error => {
+      file.close();
+      callback(error);
     })
   })
-  .then(null, (error) => {
+  .catch(error => {
     // Extract something meaningful from WorkerErrorEvent
     if (typeof error == "object" && error && error.constructor.name == "WorkerErrorEvent") {
       let message = error.message;
@@ -130,7 +130,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
     }
     throw error;
   })
-  .then(null, callback);
+  .catch(callback);
 }
 
 Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
