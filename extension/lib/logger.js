@@ -8,7 +8,6 @@ const unload = require("sdk/system/unload");
 const {TextEncoder, OS} = Cu.import("resource://gre/modules/osfile.jsm", {});
 
 const PERMS_DIRECTORY = parseInt("0755", 8);
-const PERMS_FILE = parseInt("0655", 8);
 
 function Logger(aOptions) {
   aOptions = aOptions || {};
@@ -104,32 +103,26 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   // For testing purposes send the message to stdout
   //dump(aMessage + '\n');
 
-  function callback() {
+  function callback(aResult) {
     if (typeof(aCallback) === "function") {
-      try {
-        aCallback();
-      } catch (e) {
-        Cu.reportError(e);
-      }
+      aCallback(aResult);
     }
   }
 
   let array = this._encoder.encode(aMessage);
-  let promise = OS.File.open(this.file.path, {write: true})
-  .then(file => {
+  let promise = OS.File.open(this.file.path, {write: true}).then(file => {
     file.setPosition(0, OS.File.POS_END)
     .then(file.write(array))
-    .then(
-      bytes => {
+    .then(bytes => {
         file.close();
-        callback();
+        callback(bytes);
       },
       error => {
         file.close();
-        callback();
+        callback(error);
     })
   })
-  .then(null, error => {
+  .then(null, (error) => {
     // Extract something meaningful from WorkerErrorEvent
     if (typeof error == "object" && error && error.constructor.name == "WorkerErrorEvent") {
       let message = error.message;
@@ -137,10 +130,10 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
     }
     throw error;
   })
-  .then(null, Cu.reportError);
+  .then(null, callback);
 }
 
-Logger.prototype.log = function Logger_log(aType, aData) {
+Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
   if (this.active) {
     var message = JSON.stringify({type: aType, data: aData});
 
@@ -151,7 +144,7 @@ Logger.prototype.log = function Logger_log(aType, aData) {
       message = ',' + '\r\n' + message;
     }
 
-    this._writeAsync(message);
+    this._writeAsync(message, aCallback);
   }
 };
 

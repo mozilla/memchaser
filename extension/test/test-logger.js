@@ -12,6 +12,11 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
   return function (status) {
     var line = {}, hasMore;
 
+    if (typeof status !== "number") {
+      test.fail(status);
+      return;
+    }
+
     try {
       // open an input stream from file
       var istream = Cc["@mozilla.org/network/file-input-stream;1"].
