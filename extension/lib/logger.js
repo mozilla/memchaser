@@ -20,7 +20,7 @@ function Logger(aOptions) {
 
   unload.ensure(this, 'unload');
 
-  this._encoder = new TextEncoder;
+  this._encoder = new TextEncoder();
 }
 
 Logger.prototype = {
@@ -105,15 +105,17 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
 
   function callback(aResult) {
     if (typeof(aCallback) === "function") {
-      aCallback(aResult);
+      try {
+        aCallback(aResult);
+      } catch (e) {
+        Cu.reportError(e);
+      }
     }
   }
 
   let array = this._encoder.encode(aMessage);
-  let promise = OS.File.open(this.file.path, {write: true, append: true})
-  .then(file => {
-    file.write(array)
-    .then(bytes => {
+  let promise = OS.File.open(this.file.path, {write: true, append: true}).then(file => {
+    file.write(array).then(bytes => {
       file.close();
       callback(bytes);
     },
@@ -121,14 +123,6 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
       file.close();
       callback(error);
     })
-  })
-  .catch(error => {
-    // Extract something meaningful from WorkerErrorEvent
-    if (typeof error == "object" && error && error.constructor.name == "WorkerErrorEvent") {
-      let message = error.message;
-      throw new Error(message, error.filename, error.lineno);
-    }
-    throw error;
   })
   .catch(callback);
 }
