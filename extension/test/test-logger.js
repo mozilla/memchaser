@@ -10,7 +10,13 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
   var message = '';
 
   return function (status) {
-    var line = {}, hasMore;
+    var line = {}, hasMore, isSuccessStatus;
+
+    isSuccessStatus = typeof status == "number";
+    test.assert(isSuccessStatus, status["message"] ? status.message : status);
+    if (!isSuccessStatus) {
+      return;
+    }
 
     try {
       // open an input stream from file
@@ -27,7 +33,12 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
     }
     finally {
       istream.close();
-      message = JSON.parse(message);
+      try {
+        message = JSON.parse(message);
+      } catch (e) {
+        Cu.reportError("Invalid JSON string: '" + message + "'");
+        throw e;
+      }
 
       if (typeof(testFunc) === 'function') {
         testFunc(message);
@@ -117,6 +128,25 @@ exports.test_start_directory_change_string = function (test) {
     test.assertEqual(message[0].data.x, 50);
     test.assertEqual(message[1].data.x, 60);
     test.assertEqual(message[2].data.x, 70);
+  }));
+
+  test.waitUntilDone(2000);
+}
+
+exports.test_high_speed_logging = function (test) {
+  var logger = new Logger({ dir: dir });
+  logger.start();
+
+  var loopLength = 100;
+  for (var i = 0; i < loopLength; i++) {
+    logger.log('test', { x: i });
+  }
+
+  logger.stop(verifyAsyncOutput(test, logger, function (message) {
+    test.assertEqual(message.length, loopLength);
+    for (var i = 0; i < loopLength; i++) {
+      test.assertEqual(message[i].data.x, i);
+    }
   }));
 
   test.waitUntilDone(2000);
