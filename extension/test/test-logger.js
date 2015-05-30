@@ -13,7 +13,7 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
     var line = {}, hasMore, isSuccessStatus;
 
     isSuccessStatus = typeof status == "number";
-    test.assert(isSuccessStatus, status);
+    test.assert(isSuccessStatus, status["message"] ? status.message : status);
     if (!isSuccessStatus) {
       return;
     }
@@ -36,7 +36,7 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
       try {
         message = JSON.parse(message);
       } catch (e) {
-        Cu.reportError("Invalid JSON string: " + message);
+        Cu.reportError("Invalid JSON string: '" + message + "'");
         throw e;
       }
 

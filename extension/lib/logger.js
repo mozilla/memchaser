@@ -108,7 +108,7 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
       try {
         aCallback(aResult);
       } catch (e) {
-        Cu.reportError(e);
+        console.warn(e);
       }
     }
   }
