@@ -5,68 +5,25 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { EventEmitter } = require("sdk/deprecated/events");
+const { emit, on, once, off } = require("sdk/event/core");
 const prefs = require("sdk/preferences/service");
 const timers = require("sdk/timers");
 const unload = require("sdk/system/unload");
 
 const config = require("./config");
 
+const PREF_GC_NOTIFICATIONS = config.preferences.memory_notify;
+
 Cu.import('resource://gre/modules/Services.jsm');
 
-const reporter = EventEmitter.compose({
-  _pref_gc_notifications: null,
+var _isEnabled;
+var reporter = {
+  name: "memoryReporter",
+  pref_gc_notifications: PREF_GC_NOTIFICATIONS
+};
 
-  constructor: function Reporter() {
-    // Report unhandled errors from listeners
-    this.on("error", console.exception.bind(console));
-
-    // Make sure we clean-up correctly
-    unload.ensure(this, 'unload');
-
-    if (config.application.branch >= 16) {
-      this._pref_gc_notifications = config.preferences.memory_notify;
-    }
-    else {
-      this._pref_gc_notifications = config.preferences.memory_log;
-    }
-
-    // Ensure GC/CC observer and console messages preference is enabled
-    this._isEnabled = prefs.get(this._pref_gc_notifications);
-    if (!this._isEnabled)
-      this._enable();
-
-    Services.obs.addObserver(this, config.application.topic_cc_statistics, false);
-    Services.obs.addObserver(this, config.application.topic_gc_statistics, false);
-  },
-
-  get pref_gc_notifications() {
-    return this._pref_gc_notifications;
-  },
-
-  unload: function Reporter_unload() {
-    this._removeAllListeners();
-
-    Services.obs.removeObserver(this, config.application.topic_cc_statistics, false);
-    Services.obs.removeObserver(this, config.application.topic_gc_statistics, false);
-  },
-
-  _enable: function Reporter__enable() {
-    var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
-                                             "{}"));
-    if (!modifiedPrefs.hasOwnProperty(this._pref_gc_notifications)) {
-      modifiedPrefs[this._pref_gc_notifications] = prefs.get(this._pref_gc_notifications);
-    }
-
-    prefs.set(this._pref_gc_notifications, true);
-    prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
-    this._isEnabled = true;
-  },
-
-  /**
-   * Callback for GC/CC related observer notifications
-   */
-  observe: function Reporter_observe(aSubject, aTopic, aData) {
+var memoryObserver = {
+  observe: function memoryObserver_observe(aSubject, aTopic, aData) {
     let data = { };
     let type = aTopic;
 
@@ -80,12 +37,43 @@ const reporter = EventEmitter.compose({
     if ('timestamp' in data)
       data['timestamp'] = Math.round(data['timestamp'] / 1000);
 
-    // Once the console listener can be removed, we can emit directly
-    timers.setTimeout(function (aScope) {
-      aScope._emit(type, data);
-    }, 0, this);
+    emit(reporter, type, data);
   }
-})();
+}
+
+function moduleUnload() {
+    off(reporter);
+    off(this);
+    Services.obs.removeObserver(memoryObserver, config.application.topic_cc_statistics, false);
+    Services.obs.removeObserver(memoryObserver, config.application.topic_gc_statistics, false);
+}
+
+unload.ensure(this, 'moduleUnload');
+
+on(this, "error", console.exception.bind(console));
+
+function _enable() {
+  var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
+                                            "{}"));
+  if (!modifiedPrefs.hasOwnProperty(PREF_GC_NOTIFICATIONS)) {
+    modifiedPrefs[PREF_GC_NOTIFICATIONS] = prefs.get(PREF_GC_NOTIFICATIONS);
+  }
+
+  prefs.set(PREF_GC_NOTIFICATIONS, true);
+  prefs.set(config.preferences.modified_prefs, JSON.stringify(modifiedPrefs));
+  _isEnabled = true;
+}
+
+// Ensure GC/CC observer and console messages preference is enabled
+_isEnabled = prefs.get(PREF_GC_NOTIFICATIONS);
+if (!_isEnabled)
+  _enable();
+
+reporter.on = on.bind(null, reporter);
+reporter.off = off.bind(null, reporter);
+
+Services.obs.addObserver(memoryObserver, config.application.topic_cc_statistics, false);
+Services.obs.addObserver(memoryObserver, config.application.topic_gc_statistics, false);
 
 
 /**

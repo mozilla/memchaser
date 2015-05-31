@@ -115,7 +115,7 @@ exports.main = function (options, callbacks) {
     }
   });
 
-  memory.reporter.on(config.application.topic_memory_statistics, function (aData) {
+  function memoryStatisticsForwarder(aData) {
     if (gData.current.memory)
       gData.previous.memory = gData.current.memory;
     gData.current.memory = aData;
@@ -125,25 +125,31 @@ exports.main = function (options, callbacks) {
     // Memory statistics aren't pretty useful yet to be logged
     // See: https://github.com/mozilla/memchaser/issues/106
     //logger.log(config.application.topic_memory_statistics, aData);
-  });
+  }
 
-  garbage_collector.reporter.on(config.application.topic_gc_statistics, function (aData) {
+  memory.reporter.on(config.application.topic_memory_statistics, memoryStatisticsForwarder);
+
+  function gcStatisticsForwarder(aData) {
     if (gData.current.gc)
       gData.previous.gc = gData.current.gc;
     gData.current.gc = aData;
 
     widget.postMessage({ type: "update_garbage_collector", data: gData });
     logger.log(config.application.topic_gc_statistics, aData);
-  });
+  }
 
-  garbage_collector.reporter.on(config.application.topic_cc_statistics, function (aData) {
+  garbage_collector.reporter.on(config.application.topic_gc_statistics, gcStatisticsForwarder);
+
+  function ccStatisticsForwarder(aData) {
     if (gData.current.cc)
       gData.previous.cc = gData.current.cc;
     gData.current.cc = aData;
 
     widget.postMessage({ type: "update_cycle_collector", data: gData });
     logger.log(config.application.topic_cc_statistics, aData);
-  });
+  }
+
+  garbage_collector.reporter.on(config.application.topic_cc_statistics, ccStatisticsForwarder);
 
   simple_prefs.on('log.directory', function (aData) {
     logger.dir = prefs.get(config.preferences.log_directory);
