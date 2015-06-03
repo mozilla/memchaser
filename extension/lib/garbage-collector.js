@@ -18,12 +18,12 @@ Cu.import('resource://gre/modules/Services.jsm');
 
 var _isEnabled;
 var reporter = {
-  name: "memoryReporter",
+  name: "gcCcReporter",
   pref_gc_notifications: PREF_GC_NOTIFICATIONS
 };
 
-var memoryObserver = {
-  observe: function memoryObserver_observe(aSubject, aTopic, aData) {
+var gcCcObserver = {
+  observe: function gcCcObserver_observe(aSubject, aTopic, aData) {
     let data = { };
     let type = aTopic;
 
@@ -43,14 +43,11 @@ var memoryObserver = {
 
 function moduleUnload() {
     off(reporter);
-    off(this);
-    Services.obs.removeObserver(memoryObserver, config.application.topic_cc_statistics, false);
-    Services.obs.removeObserver(memoryObserver, config.application.topic_gc_statistics, false);
+    Services.obs.removeObserver(gcCcObserver, config.application.topic_cc_statistics, false);
+    Services.obs.removeObserver(gcCcObserver, config.application.topic_gc_statistics, false);
 }
 
 unload.ensure(this, 'moduleUnload');
-
-on(this, "error", console.exception.bind(console));
 
 function _enable() {
   var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
@@ -72,8 +69,8 @@ if (!_isEnabled)
 reporter.on = on.bind(null, reporter);
 reporter.off = off.bind(null, reporter);
 
-Services.obs.addObserver(memoryObserver, config.application.topic_cc_statistics, false);
-Services.obs.addObserver(memoryObserver, config.application.topic_gc_statistics, false);
+Services.obs.addObserver(gcCcObserver, config.application.topic_cc_statistics, false);
+Services.obs.addObserver(gcCcObserver, config.application.topic_gc_statistics, false);
 
 
 /**
