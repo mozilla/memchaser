@@ -5,11 +5,9 @@
 const { components, Cc, Ci, Cu } = require("chrome");
 const unload = require("sdk/system/unload");
 
-Cu.import('resource://gre/modules/NetUtil.jsm');
-Cu.import('resource://gre/modules/Services.jsm');
+const {TextEncoder, OS} = Cu.import("resource://gre/modules/osfile.jsm", {});
 
 const PERMS_DIRECTORY = parseInt("0755", 8);
-const PERMS_FILE = parseInt("0655", 8);
 
 function Logger(aOptions) {
   aOptions = aOptions || {};
@@ -22,10 +20,7 @@ function Logger(aOptions) {
 
   unload.ensure(this, 'unload');
 
-  // Converter to create input streams out of strings
-  this._converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"]
-                    .createInstance(Ci.nsIScriptableUnicodeConverter);
-  this._converter.charset = "UTF-8";
+  this._encoder = new TextEncoder();
 }
 
 Logger.prototype = {
@@ -108,24 +103,28 @@ Logger.prototype._writeAsync = function Logger_writeAsync(aMessage, aCallback) {
   // For testing purposes send the message to stdout
   //dump(aMessage + '\n');
 
-  // Create an output stream to write to file
-  var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                 .createInstance(Ci.nsIFileOutputStream);
-  foStream.init(this._file, 0x02 | 0x08 | 0x10, PERMS_FILE, foStream.DEFER_OPEN);
-
-  // Write asynchronously to buffer;
-  // Input and output streams are closed after write
-  var iStream = this._converter.convertToInputStream(aMessage);
-  NetUtil.asyncCopy(iStream, foStream, function (status) {
-    if (!components.isSuccessCode(status)) {
-      var errorMessage = new Error("Error while writing to file: " + status);
-      console.error(errorMessage);
-    }
-
+  function callback(aResult) {
     if (typeof(aCallback) === "function") {
-      aCallback(status);
+      try {
+        aCallback(aResult);
+      } catch (e) {
+        console.warn(e);
+      }
     }
-  });
+  }
+
+  let array = this._encoder.encode(aMessage);
+  let promise = OS.File.open(this.file.path, {write: true, append: true}).then(file => {
+    file.write(array).then(bytes => {
+      file.close();
+      callback(bytes);
+    },
+    error => {
+      file.close();
+      callback(error);
+    })
+  })
+  .catch(callback);
 }
 
 Logger.prototype.log = function Logger_log(aType, aData, aCallback) {
