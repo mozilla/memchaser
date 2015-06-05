@@ -5,7 +5,7 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { emit, on, once, off } = require("sdk/event/core");
+const { emit, on, off } = require("sdk/event/core");
 const prefs = require("sdk/preferences/service");
 const self = require("sdk/self");
 const timer = require("sdk/timers");
@@ -26,17 +26,6 @@ var reporter = {
   name: "memoryReporter"
 }
 
-// Make sure we clean-up correctly
-unload.ensure(this, "moduleUnload");
-
-function moduleUnload() {
-    off(reporter);
-    timer.clearInterval(_timer);
-}
-
-reporter.on = on.bind(null, reporter);
-reporter.off = off.bind(null, reporter);
-
 /**
   * Retrieve memory statistics
   */
@@ -50,16 +39,28 @@ reporter.retrieveStatistics = function Reporter_retrieveStatistics() {
   emit(reporter, config.application.topic_memory_statistics, data);
 }
 
-// TODO: Reading the pref should be moved out of this module
-interval = prefs.get(config.preferences.memory_poll_interval,
-                     config.extension.memory_poll_interval_default);
-_timer = timer.setInterval(reporter.retrieveStatistics, interval);
+var init = function () {
+  // TODO: Reading the pref should be moved out of this module
+  interval = prefs.get(config.preferences.memory_poll_interval,
+                      config.extension.memory_poll_interval_default);
+  _timer = timer.setInterval(reporter.retrieveStatistics, interval);
 
+  reporter.on = on.bind(null, reporter);
+  reporter.off = off.bind(null, reporter);
+
+  // Make sure we clean-up correctly
+  unload.when ((reason) => {
+    off(reporter);
+    timer.clearInterval(_timer);
+  });
+}
 
 var minimizeMemory = function (aCallback) {
   Services.obs.notifyObservers(null, "child-mmu-request", null);
   memSrv.minimizeMemoryUsage(aCallback);
 }
+
+init();
 
 
 exports.reporter = reporter;

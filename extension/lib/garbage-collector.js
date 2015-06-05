@@ -5,7 +5,7 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { emit, on, once, off } = require("sdk/event/core");
+const { emit, on, off } = require("sdk/event/core");
 const prefs = require("sdk/preferences/service");
 const timers = require("sdk/timers");
 const unload = require("sdk/system/unload");
@@ -22,8 +22,8 @@ var reporter = {
   pref_gc_notifications: PREF_GC_NOTIFICATIONS
 };
 
-var gcCcObserver = {
-  observe: function gcCcObserver_observe(aSubject, aTopic, aData) {
+var CollectorObserver = {
+  observe: function CollectorObserver_observe(aSubject, aTopic, aData) {
     let data = { };
     let type = aTopic;
 
@@ -41,15 +41,7 @@ var gcCcObserver = {
   }
 }
 
-function moduleUnload() {
-    off(reporter);
-    Services.obs.removeObserver(gcCcObserver, config.application.topic_cc_statistics, false);
-    Services.obs.removeObserver(gcCcObserver, config.application.topic_gc_statistics, false);
-}
-
-unload.ensure(this, 'moduleUnload');
-
-function _enable() {
+var _enable = function () {
   var modifiedPrefs = JSON.parse(prefs.get(config.preferences.modified_prefs,
                                             "{}"));
   if (!modifiedPrefs.hasOwnProperty(PREF_GC_NOTIFICATIONS)) {
@@ -61,17 +53,25 @@ function _enable() {
   _isEnabled = true;
 }
 
-// Ensure GC/CC observer and console messages preference is enabled
-_isEnabled = prefs.get(PREF_GC_NOTIFICATIONS);
-if (!_isEnabled)
-  _enable();
+var init = function () {
+  // Ensure GC/CC observer and console messages preference is enabled
+  _isEnabled = prefs.get(PREF_GC_NOTIFICATIONS);
+  if (!_isEnabled)
+    _enable();
 
-reporter.on = on.bind(null, reporter);
-reporter.off = off.bind(null, reporter);
+  reporter.on = on.bind(null, reporter);
+  reporter.off = off.bind(null, reporter);
 
-Services.obs.addObserver(gcCcObserver, config.application.topic_cc_statistics, false);
-Services.obs.addObserver(gcCcObserver, config.application.topic_gc_statistics, false);
+  Services.obs.addObserver(CollectorObserver, config.application.topic_cc_statistics, false);
+  Services.obs.addObserver(CollectorObserver, config.application.topic_gc_statistics, false);
 
+  unload.when((reason) => {
+      off(reporter);
+      Services.obs.removeObserver(CollectorObserver, config.application.topic_cc_statistics, false);
+      Services.obs.removeObserver(CollectorObserver, config.application.topic_gc_statistics, false);
+  });
+
+}
 
 /**
  * Trigger a Cycle Collector run
@@ -92,6 +92,8 @@ var doGlobalGC = function () {
   Cu.forceGC();
   Services.obs.notifyObservers(null, "child-gc-request", null);
 }
+
+init();
 
 
 exports.reporter = reporter;
