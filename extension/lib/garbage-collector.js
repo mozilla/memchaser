@@ -18,7 +18,7 @@ Cu.import('resource://gre/modules/Services.jsm');
 
 var _isEnabled;
 var reporter = {
-  name: "gcCcReporter",
+  name: "CollectorReporter",
   pref_gc_notifications: PREF_GC_NOTIFICATIONS
 };
 
