@@ -5,7 +5,7 @@
 "use strict";
 
 const { Cc, Ci, Cu } = require("chrome");
-const { EventEmitter } = require("sdk/deprecated/events");
+const { emit, on, off } = require("sdk/event/core");
 const prefs = require("sdk/preferences/service");
 const self = require("sdk/self");
 const timer = require("sdk/timers");
@@ -18,47 +18,49 @@ Cu.import('resource://gre/modules/Services.jsm');
 var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
              .getService(Ci.nsIMemoryReporterManager);
 
+var interval;
+var _timer;
 
-const reporter = EventEmitter.compose({
-  constructor: function Reporter() {
-    // Report unhandled errors from listeners
-    this.on("error", console.exception.bind(console));
 
-    // Make sure we clean-up correctly
-    unload.ensure(this, 'unload');
+var reporter = {
+  name: "memoryReporter"
+}
 
-    // TODO: Reading the pref should be moved out of this module
-    this.interval = prefs.get(config.preferences.memory_poll_interval,
-                              config.extension.memory_poll_interval_default);
-    this._timer = timer.setInterval(function (aScope) { aScope.retrieveStatistics() },
-                                    this.interval, this);
-  },
-
-  unload: function Reporter_unload() {
-    this._removeAllListeners();
-    timer.clearInterval(this._timer);
-  },
-
-  /**
-   * Retrieve memory statistics
-   */
-  retrieveStatistics: function Reporter_retrieveStatistics() {
-    var data = {
-      timestamp:  Date.now(),
-      //explicit: memSrv.explicit,
-      resident: memSrv.residentFast
-    }
-
-    this._emit(config.application.topic_memory_statistics, data);
+/**
+  * Retrieve memory statistics
+  */
+reporter.retrieveStatistics = function Reporter_retrieveStatistics() {
+  var data = {
+    timestamp:  Date.now(),
+    //explicit: memSrv.explicit,
+    resident: memSrv.residentFast
   }
 
-})();
+  emit(reporter, config.application.topic_memory_statistics, data);
+}
 
+var init = function () {
+  // TODO: Reading the pref should be moved out of this module
+  interval = prefs.get(config.preferences.memory_poll_interval,
+                      config.extension.memory_poll_interval_default);
+  _timer = timer.setInterval(reporter.retrieveStatistics, interval);
+
+  reporter.on = on.bind(null, reporter);
+  reporter.off = off.bind(null, reporter);
+
+  // Make sure we clean-up correctly
+  unload.when ((reason) => {
+    off(reporter);
+    timer.clearInterval(_timer);
+  });
+}
 
 var minimizeMemory = function (aCallback) {
   Services.obs.notifyObservers(null, "child-mmu-request", null);
   memSrv.minimizeMemoryUsage(aCallback);
 }
+
+init();
 
 
 exports.reporter = reporter;
