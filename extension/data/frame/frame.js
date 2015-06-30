@@ -3,23 +3,6 @@ const BYTE_TO_MEGABYTE = 1/1048576;
 const GARBAGE_COLLECTOR_DURATION_WARNING = 100;
 
 
-(function setup() {
-  let elements = [].slice.call(document.querySelectorAll("[data-tooltip]"));
-
-  elements.forEach(function (element) {
-    element.onmouseover = function () {
-      self.postMessage({ type: "update_tooltip", data: this.dataset.tooltip });
-    };
-  });
-
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=660857
-  // TODO: Remove this when bug 660857 is fixed; otherwise
-  // we have to resort to the following workaround:
-  document.getElementById("splash").style.display = "none";
-  document.getElementById("init").style.display = "inline";
-})();
-
-
 /**
  * Get the duration of the given GC or CC entry
  */
@@ -27,27 +10,17 @@ var getDuration = function (aEntry) {
   let keys = ['max_slice_pause', 'duration',
               'MaxPause', 'max_pause',
               'Total', 'TotalTime', 'total_time'];
+  let key;
 
-  for each (let key in keys) {
-    if (key in aEntry) {
-      return aEntry[key];
-    }
-  };
+  if (keys.some(aKey => {
+    key = aKey;
+    return key in aEntry;
+  })) {
+    return aEntry[key];
+  }
 
   return undefined;
 }
-
-/**
- * Hide the initialization element and show real values
- */
-var hideInitText = function () {
-  document.getElementById("init").style.display = "none";
-  document.getElementById("data").style.display = "inline";
-  document.getElementById("logger").style.display = "inline-block";
-
-  // Prevents execution of above DOM calls
-  hideInitText = function () { return; }
-};
 
 /**
  * Check if the GC entry is an incremental GC
@@ -58,13 +31,9 @@ var isIncrementalGC = function (aEntry) {
   if ('nonincremental_reason' in aEntry)
     return aEntry['nonincremental_reason'] === 'none';
 
-  for each (let key in keys) {
-    if (key in aEntry) {
-      return true;
-    }
-  }
-
-  return false;
+  return keys.some(aKey => {
+    aKey in aEntry;
+  });
 }
 
 /**
@@ -96,7 +65,6 @@ var isIncrementalCollection = function (aType, aEntry) {
  * Update the values of the specified collector
  */
 var updateCollector = function (aType, aData) {
-  hideInitText();
 
   let duration = getDuration(aData['current'][aType]);
   let age;
@@ -127,8 +95,8 @@ var updateCollector = function (aType, aData) {
 }
 
 
-self.on("message", function (aMessage) {
-  let { type, data } = aMessage;
+window.addEventListener("message", function (aEvent) {
+  let { type, data } = aEvent.data;
 
   switch (type) {
     case "update_cycle_collector":
@@ -139,13 +107,7 @@ self.on("message", function (aMessage) {
       updateCollector('gc', data);
       break;
 
-    case "update_logger":
-      let logger = document.getElementById("logger");
-      logger.className = (data["active"]) ? "enabled" : "disabled";
-      break;
     case "update_memory":
-      hideInitText();
-
       // Update widget with current memory usage
       ["resident"].forEach(function (aType) {
         if (data[aType]) {
@@ -155,4 +117,4 @@ self.on("message", function (aMessage) {
       });
       break;
   }
-});
+}, false);

@@ -2,28 +2,26 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <link rel="stylesheet" href="widget.css" type="text/css" />
+  <link rel="stylesheet" href="frame.css" type="text/css" />
+  <script type="text/javascript;version=1.8" src="frame.js"></script>
 </head>
 
 <body>
-  <span id="splash">MemChaser</span>
-  <p id="init">Initializing MemChaser...</p>
   <p id="data">
-    <span id="resident">
+    <span id="resident" class="info-element">
       <span class="label" data-tooltip="resident_label">Resident: </span>
       <span class="data" data-tooltip="resident_data">n/a</span>,
     </span>
-    <span id="gc">
+    <span id="gc" class="info-element">
       <span class="label" data-tooltip="gc_label">GC: </span>
       <span class="duration" data-tooltip="gc_duration">n/a</span>
       <span class="age" data-tooltip="gc_age"></span>,
     </span>
-    <span id="cc">
+    <span id="cc" class="info-element">
       <span class="label" data-tooltip="cc_label">CC: </span>
       <span class="duration" data-tooltip="cc_duration">n/a</span>
       <span class="age" data-tooltip="cc_age"></span>
     </span>
   </p>
-  <p id="logger" class="disabled" data-tooltip="logger"></p>
 </body>
 </html>

@@ -5,12 +5,14 @@
 "use strict";
 
 const { Cc, Ci, Cu, CC } = require("chrome");
-const events = require("sdk/deprecated/events");
+const { Frame } = require("sdk/ui/frame");
 const panel = require("sdk/panel");
 const prefs = require("sdk/preferences/service");
 const self = require("sdk/self");
 const simple_prefs = require("sdk/simple-prefs");
-const widgets = require("sdk/widget");
+const tabs = require("sdk/tabs");
+const { ToggleButton } = require('sdk/ui/button/toggle');
+const { Toolbar } = require("sdk/ui/toolbar");
 
 const config = require("./config");
 const garbage_collector = require("./garbage-collector");
@@ -43,10 +45,11 @@ exports.main = function (options, callbacks) {
 
   var contextPanel = panel.Panel({
     width: 128,
-    height: 107,
+    height: 112,
     contentURL: self.data.url("panel/context.html"),
     contentScriptFile: [self.data.url("panel/context.js")],
-    contentScriptWhen: "ready"
+    contentScriptWhen: "ready",
+    onHide: handleContextPanelHide
   });
 
   contextPanel.on("message", function (aMessage) {
@@ -57,15 +60,14 @@ exports.main = function (options, callbacks) {
         contextPanel.hide();
 
         switch (data) {
+          case "help":
+            tabs.open(config.extension.help_page_url);
+            break;
           // Show the memchaser directory.
           case "log_folder":
             let nsLocalFile = CC("@mozilla.org/file/local;1",
                                 "nsILocalFile", "initWithPath");
             new nsLocalFile(logger.dir.path).reveal();
-            break;
-          case "logger_status":
-            logger.active = !logger.active;
-            widget.postMessage({ type: "update_logger", data: { "active": logger.active } });
             break;
           case "minimize_memory":
             memory.minimizeMemory(memory.reporter.retrieveStatistics);
@@ -83,44 +85,53 @@ exports.main = function (options, callbacks) {
     }
   });
 
-  var widget = widgets.Widget({
-    id: "memchaser-widget",
-    label: "MemChaser",
-    tooltip: "MemChaser",
-    contentURL: self.data.url("widget/widget.html"),
-    contentScriptFile: [self.data.url("widget/widget.js")],
-    contentScriptWhen: "ready",
-    panel: contextPanel,
-    width: 360,
-    onClick: function () {
-      contextPanel.postMessage({ type: "update", data: { logger_active: logger.active }});
-    }
+  var frame = new Frame({
+    url: "./frame/frame.html"
   });
 
-
-  widget.on("message", function (aMessage) {
-    let { type, data } = aMessage;
-    switch (type) {
-      // If user hovers over an entry the tooltip has to be updated
-      case "update_tooltip":
-        if (data === "logger" && logger.active) {
-          data = "logger_enabled";
-        }
-        else if (data === "logger") {
-          data = "logger_disabled";
-        }
-
-        widget.tooltip = config.extension.widget_tooltips[data];
-        break;
-    }
+  var menuButton = ToggleButton({
+    id: "toolbar-menu-button",
+    label: config.extension.ui_tooltips.tools_menu,
+    icon: "./images/menu_button.svg",
+    onChange: handleMenuButtonChange
   });
+
+  var logButton = ToggleButton({
+    id: "toolbar-log-button",
+    label: config.extension.ui_tooltips.logger_disabled,
+    icon: "./images/logging_disabled.svg",
+    onChange: handleLogButtonChange
+  });
+
+  var toolbar = Toolbar({
+    name: "memchaser-toolbar",
+    title: "MemChaser",
+    items: [frame, menuButton, logButton]
+  });
+
+  function handleMenuButtonChange(state) {
+    if (state.checked) {
+      contextPanel.show({ position: menuButton });
+    }
+  }
+
+  function handleContextPanelHide() {
+    menuButton.state('window', {checked: false});
+  }
+
+  function handleLogButtonChange(state) {
+    logger.active = state.checked;
+    var stateLabel = logger.active ? "enabled" : "disabled";
+    logButton.label = config.extension.ui_tooltips["logger_" + stateLabel];
+    logButton.icon = "./images/logging_" + stateLabel + ".svg";
+  }
 
   function memoryStatisticsForwarder(aData) {
     if (gData.current.memory)
       gData.previous.memory = gData.current.memory;
     gData.current.memory = aData;
 
-    widget.postMessage({ type: "update_memory", data: aData });
+    frame.postMessage({ type: "update_memory", data: aData }, frame.url);
 
     // Memory statistics aren't pretty useful yet to be logged
     // See: https://github.com/mozilla/memchaser/issues/106
@@ -134,7 +145,7 @@ exports.main = function (options, callbacks) {
       gData.previous.gc = gData.current.gc;
     gData.current.gc = aData;
 
-    widget.postMessage({ type: "update_garbage_collector", data: gData });
+    frame.postMessage({ type: "update_garbage_collector", data: gData }, frame.url);
     logger.log(config.application.topic_gc_statistics, aData);
   }
 
@@ -145,7 +156,7 @@ exports.main = function (options, callbacks) {
       gData.previous.cc = gData.current.cc;
     gData.current.cc = aData;
 
-    widget.postMessage({ type: "update_cycle_collector", data: gData });
+    frame.postMessage({ type: "update_cycle_collector", data: gData }, frame.url);
     logger.log(config.application.topic_cc_statistics, aData);
   }
 

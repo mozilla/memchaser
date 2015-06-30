@@ -39,9 +39,11 @@ const APPLICATION = {
  * Extension related constants
  */
 const EXTENSION = {
+    help_page_url: "https://github.com/mozilla/memchaser/blob/master/README.md#memchaser",
+
     memory_poll_interval_default: 5000,
 
-    widget_tooltips : {
+    ui_tooltips : {
       resident_label: "Memory used by the process that is present in physical memory. " +
                       "It does not necessarily have to match the process manager.",
       resident_data: "Memory used by the process that is present in physical memory. " +
@@ -54,8 +56,11 @@ const EXTENSION = {
                 "groups of XPCOM objects that only refer to each other.",
       cc_duration: "Duration of the last cycle collector activity.",
       cc_age: "The interval between the last two cycle collection activities.",
+
       logger_enabled: "MemChaser logging is currently enabled. Click to disable.",
-      logger_disabled: "MemChaser logging is currently disabled. Click to enable." 
+      logger_disabled: "MemChaser logging is currently disabled. Click to enable.",
+
+      tools_menu: "MemChaser Tools"
     }
 };
 

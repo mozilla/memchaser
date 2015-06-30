@@ -7,16 +7,3 @@
     };
   });
 })();
-
-
-self.on("message", function (aMessage) {
-  let { type, data } = aMessage;
-  switch (type) {
-    case "update":
-
-      var logger_status = document.querySelector("#logger_status");
-      var action = (data.logger_active) ? "Stop " : "Start ";
-      logger_status.textContent = action + "Logging";
-      break;
-  }
-});

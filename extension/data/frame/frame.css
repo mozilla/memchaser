@@ -1,0 +1,12 @@
+body {
+  margin-top: 1px;
+  font-family: "Lucida Grande", "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  color: inherit;
+  text-align: right;
+  cursor: default;
+}
+
+.warning {
+  color: #800;
+}
