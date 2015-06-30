@@ -9,7 +9,7 @@
         "Szabolcs Hubai",
         "Uchida Taishi"
     ],
-    "version": "0.6",
+    "version": "0.7",
     "fullName": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",

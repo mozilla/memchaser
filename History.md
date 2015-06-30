@@ -1,3 +1,12 @@
+0.7 / 2015-06-30
+================
+
+ * Replace widget module with new Addon SDK ui modules (#183)
+ * Replace EventEmitter with core events (#103)
+ * Rewrite Logger.prototype._writeAsync() to use OSFile.jsm (#208)
+ * Enable verbose logging for cfx test, and make it opt-in for cfx run and similar commands (#209)
+ * Improve Travis-CI to run tests with every supported Firefox release (#191)
+
 0.6 / 2014-09-17
 ================
 
