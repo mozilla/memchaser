@@ -15,9 +15,6 @@ env:
     - MOZDOWNLOADPARAMS='-t release -v latest'
     - MOZDOWNLOADPARAMS='-t release -v latest-esr'
 
-before_install:
-  - sudo apt-get update -qq
-
 addons:
   apt:
     packages:
