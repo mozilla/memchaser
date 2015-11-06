@@ -22,7 +22,7 @@ addons:
     - python-pip
 
 install:
-  - pip install --user mozdownload==1.12
+  - pip install --user mozdownload
 
 before_script:
   - sh -e /etc/init.d/xvfb start
