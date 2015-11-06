@@ -1,4 +1,9 @@
+sudo: false
+
 language: node_js
+
+node_js:
+  - "node"
 
 env:
   global:
@@ -10,12 +15,14 @@ env:
     - MOZDOWNLOADPARAMS='-t release -v latest'
     - MOZDOWNLOADPARAMS='-t release -v latest-esr'
 
-before_install:
-  - sudo apt-get update -qq
+addons:
+  apt:
+    packages:
+    - ant
+    - python-pip
 
 install:
-  - sudo apt-get install -y ant python-pip
-  - sudo pip install mozdownload
+  - pip install --user mozdownload
 
 before_script:
   - sh -e /etc/init.d/xvfb start
