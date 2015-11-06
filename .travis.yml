@@ -1,3 +1,5 @@
+sudo: false
+
 language: node_js
 
 env:
@@ -13,9 +15,14 @@ env:
 before_install:
   - sudo apt-get update -qq
 
+addons:
+  apt:
+    packages:
+    - ant
+    - python-pip
+
 install:
-  - sudo apt-get install -y ant python-pip
-  - sudo pip install mozdownload==1.12
+  - pip install mozdownload==1.12
 
 before_script:
   - sh -e /etc/init.d/xvfb start
