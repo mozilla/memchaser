@@ -10,9 +10,10 @@
         "Uchida Taishi"
     ],
     "version": "0.7",
-    "fullName": "MemChaser",
+    "title": "MemChaser",
     "id": "memchaser@quality.mozilla.org",
     "description": "Chasing garbage collection and memory usage",
+    "main": "lib/main.js",
     "preferences": [{
         "name": "memory.interval",
         "title": "Poll interval for memory information (ms)",

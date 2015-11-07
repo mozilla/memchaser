@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="memchaser" default="dev">
+<project name="memchaser@quality.mozilla.org" default="dev">
   <property name="xpi.dir" value="./xpi"/>
 
   <tstamp>
@@ -56,27 +56,24 @@
   <target name="build">
     <property name="build.filename" value="extension/${ant.project.name}.xpi"/>
     <delete file="${build.filename}"/>
-    <exec executable="/bin/sh" dir="addon-sdk" failonerror="true">
-      <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx ${cfx.verbose} xpi"/>
+    <exec executable="jpm" dir="extension" failonerror="true">
+      <arg line="${cfx.verbose} xpi"/>
     </exec>
     <echo>build.filename: ${build.filename}</echo>
   </target>
 
   <target name="run">
-    <exec executable="/bin/sh" dir="addon-sdk" failonerror="true">
-      <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx ${cfx.verbose} run ${cfx.binary}"/>
+    <exec executable="jpm" dir="extension" failonerror="true">
+      <arg line="${cfx.binary} run"/>
     </exec>
   </target>
 
   <target name="test">
-    <exec executable="/bin/sh"
-          dir="addon-sdk"
+    <exec executable="jpm"
+          dir="extension"
           resultproperty="test.result"
           failonerror="true">
-      <arg value="-c"/>
-      <arg value=". bin/activate;cd ../extension;cfx --verbose test ${cfx.binary}"/>
+      <arg line="--verbose ${cfx.binary} test"/>
     </exec>
     <fail message="Tests failed!">
       <condition>
