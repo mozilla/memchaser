@@ -23,7 +23,7 @@ addons:
 
 install:
   - pip install --user mozdownload
-  - npm install jpm
+  - npm install jpm --global
 
 before_script:
   - sh -e /etc/init.d/xvfb start
