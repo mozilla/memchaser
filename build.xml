@@ -73,7 +73,7 @@
           dir="extension"
           resultproperty="test.result"
           failonerror="true">
-      <arg line="--verbose ${cfx.binary} --prefs test/helper.json test"/>
+      <arg line="--verbose ${cfx.binary} --prefs test/testhelper.json test"/>
     </exec>
     <fail message="Tests failed!">
       <condition>
