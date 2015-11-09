@@ -6,14 +6,14 @@ Cu.import('resource://gre/modules/Services.jsm');
 
 const dir = Services.dirsvc.get("TmpD", Ci.nsILocalFile);
 
-var verifyAsyncOutput = function (test, logger, testFunc) {
+var verifyAsyncOutput = function (assert, done, logger, testFunc) {
   var message = '';
 
   return function (status) {
     var line = {}, hasMore, isSuccessStatus;
 
     isSuccessStatus = typeof status == "number";
-    test.assert(isSuccessStatus, status["message"] ? status.message : status);
+    assert.ok(isSuccessStatus, status["message"] ? status.message : "Async write works");
     if (!isSuccessStatus) {
       return;
     }
@@ -45,55 +45,53 @@ var verifyAsyncOutput = function (test, logger, testFunc) {
       }
 
       logger._file.remove(false);
-      test.assert(!logger._file.exists(), "Clean-up; delete test file");
-      test.done();
+      assert.ok(!logger._file.exists(), "Clean-up; delete test file");
+      done();
     }
   };
 }
 
-exports.test_default_to_not_logging = function (test) {
+exports.test_default_to_not_logging = function (assert, done) {
   var logger = new Logger({ dir: dir });
 
-  test.assert(!logger.active);
-  test.done();
+  assert.ok(!logger.active, "new Logger is inactive by default");
+  done();
 }
 
-exports.test_start_stop_logging = function (test) {
+exports.test_start_stop_logging = function (assert, done) {
   var logger = new Logger({ dir: dir });
 
   logger.start();
-  test.assert(logger.active);
+  assert.ok(logger.active, "Logger is active after start()");
 
   logger.stop();
-  test.assert(!logger.active);
+  assert.ok(!logger.active, "Logger is inactive after stop()");
 
   logger.active = true;
-  test.assert(logger.active);
+  assert.ok(logger.active, "Logger is active after setting |active| directly to true");
 
   logger.active = false;
-  test.assert(!logger.active);
+  assert.ok(!logger.active, "Logger is inactive after setting |active| directly to false");
 
-  test.done();
+  done();
 }
 
-exports.test_log_and_callback = function (test) {
+exports.test_log_and_callback = function (assert, done) {
   var logger = new Logger({ dir: dir });
 
   logger.start();
   logger.log('test', { x: 50 });
   logger.log('test', { x: 60 });
   logger.log('test', { x: 70 });
-  logger.stop(verifyAsyncOutput(test, logger, function (message) {
-    test.assertEqual(message.length, 3);
-    test.assertEqual(message[0].data.x, 50);
-    test.assertEqual(message[1].data.x, 60);
-    test.assertEqual(message[2].data.x, 70);
+  logger.stop(verifyAsyncOutput(assert, done, logger, function (message) {
+    assert.equal(message.length, 3, "Log length is 3");
+    assert.equal(message[0].data.x, 50, "The 1st element is 50 in the log");
+    assert.equal(message[1].data.x, 60, "The 2nd element is 60 in the log");
+    assert.equal(message[2].data.x, 70, "The 3rd element is 70 in the log");
   }));
-
-  test.waitUntilDone(2000);
 }
 
-exports.test_start_directory_change_nsIFile = function (test) {
+exports.test_start_directory_change_nsIFile = function (assert, done) {
   var logger = new Logger({ dir: dir });
   var newDir = dir.clone();
   newDir.append('newdir');
@@ -103,17 +101,15 @@ exports.test_start_directory_change_nsIFile = function (test) {
   logger.log('test', { x: 50 });
   logger.log('test', { x: 60 });
   logger.log('test', { x: 70 });
-  logger.stop(verifyAsyncOutput(test, logger, function (message) {
-    test.assertEqual(message.length, 3);
-    test.assertEqual(message[0].data.x, 50);
-    test.assertEqual(message[1].data.x, 60);
-    test.assertEqual(message[2].data.x, 70);
+  logger.stop(verifyAsyncOutput(assert, done, logger, function (message) {
+    assert.equal(message.length, 3, "Log length is 3");
+    assert.equal(message[0].data.x, 50, "The 1st element is 50 in the log");
+    assert.equal(message[1].data.x, 60, "The 2nd element is 60 in the log");
+    assert.equal(message[2].data.x, 70, "The 3rd element is 70 in the log");
   }));
-
-  test.waitUntilDone(2000);
 }
 
-exports.test_start_directory_change_string = function (test) {
+exports.test_start_directory_change_string = function (assert, done) {
   var logger = new Logger({ dir: dir });
   var newDir = dir.clone();
   newDir.append('newdir');
@@ -123,17 +119,15 @@ exports.test_start_directory_change_string = function (test) {
   logger.log('test', { x: 50 });
   logger.log('test', { x: 60 });
   logger.log('test', { x: 70 });
-  logger.stop(verifyAsyncOutput(test, logger, function (message) {
-    test.assertEqual(message.length, 3);
-    test.assertEqual(message[0].data.x, 50);
-    test.assertEqual(message[1].data.x, 60);
-    test.assertEqual(message[2].data.x, 70);
+  logger.stop(verifyAsyncOutput(assert, done, logger, function (message) {
+    assert.equal(message.length, 3, "Log length is 3");
+    assert.equal(message[0].data.x, 50, "The 1st element is 50 in the log");
+    assert.equal(message[1].data.x, 60, "The 2nd element is 60 in the log");
+    assert.equal(message[2].data.x, 70, "The 3rd element is 70 in the log");
   }));
-
-  test.waitUntilDone(2000);
 }
 
-exports.test_high_speed_logging = function (test) {
+exports.test_high_speed_logging = function (assert, done) {
   var logger = new Logger({ dir: dir });
   logger.start();
 
@@ -142,12 +136,13 @@ exports.test_high_speed_logging = function (test) {
     logger.log('test', { x: i });
   }
 
-  logger.stop(verifyAsyncOutput(test, logger, function (message) {
-    test.assertEqual(message.length, loopLength);
+  logger.stop(verifyAsyncOutput(assert, done, logger, function (message) {
+    assert.equal(message.length, loopLength, "Log length is " + loopLength);
     for (var i = 0; i < loopLength; i++) {
-      test.assertEqual(message[i].data.x, i);
+      var element = message[i].data.x;
+      assert.equal(element, i, "The " + (i+1) + ". element is " + element + " in the log");
     }
   }));
-
-  test.waitUntilDone(2000);
 }
+
+require("sdk/test").run(exports);
