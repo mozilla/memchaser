@@ -1,6 +1,6 @@
 const { Cc, Ci, Cu } = require("chrome");
 
-const { Logger } = require("./logger");
+const { Logger } = require("../lib/logger");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
