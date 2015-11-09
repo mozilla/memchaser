@@ -73,7 +73,10 @@
           dir="extension"
           resultproperty="test.result"
           failonerror="true">
-      <arg line="--verbose ${cfx.binary} --prefs test/testhelper.json test"/>
+      <!-- The "--prefs" parameter should be removed
+           once ESR38 has been desupported.
+           See https://github.com/mozilla/memchaser/pull/241 -->
+      <arg line="--verbose ${cfx.binary} --prefs test/prefs_workaround.json test"/>
     </exec>
     <fail message="Tests failed!">
       <condition>
