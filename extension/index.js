@@ -14,10 +14,10 @@ const tabs = require("sdk/tabs");
 const { ToggleButton } = require('sdk/ui/button/toggle');
 const { Toolbar } = require("sdk/ui/toolbar");
 
-const config = require("./config");
-const garbage_collector = require("./garbage-collector");
-const { Logger } = require("./logger");
-var memory = require("./memory");
+const config = require("lib/config");
+const garbage_collector = require("lib/garbage-collector");
+const { Logger } = require("lib/logger");
+var memory = require("lib/memory");
 
 Cu.import('resource://gre/modules/Services.jsm');
 
